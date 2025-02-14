@@ -105,7 +105,7 @@ func (repo *PostgresRepository) UpsertUserReaction(reaction entity.ReactionParam
 
 	err := repo.PostgresClient.Exec(query, param)
 	if err != nil {
-		return errors.Wrap(err, "DB insert failed")
+		return errors.Wrap(err, "DB upsert failed")
 	}
 
 	return nil

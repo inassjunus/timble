@@ -2,16 +2,15 @@ package config_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/alicebob/miniredis/v2"
-	"github.com/go-redis/cache/v9"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
 	redis "timble/internal/connection/redis"
 	"timble/internal/utils"
-	mocks "timble/mocks/internal_/connection/postgres"
+	mocksCache "timble/mocks/internal_/connection/cache"
+	mocksPostgre "timble/mocks/internal_/connection/postgres"
 	"timble/module/users/config"
 	"timble/module/users/internal/handler"
 )
@@ -28,11 +27,8 @@ func TestNewSearchTuningRESTHandler(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			redisClient, _ := redis.NewClient(s.Host(), s.Port(), "200ms", "0")
-			cacheClient := cache.New(&cache.Options{
-				Redis:      redisClient.Client,
-				LocalCache: cache.NewTinyLFU(1000, time.Minute),
-			})
-			postgresClient := mocks.NewPostgresInterface(t)
+			cacheClient := mocksCache.NewCacheInterface(t)
+			postgresClient := mocksPostgre.NewPostgresInterface(t)
 
 			result := config.NewUsersHandler(&utils.AuthConfig{}, &zap.Logger{}, cacheClient, redisClient, postgresClient)
 

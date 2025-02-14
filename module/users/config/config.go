@@ -3,9 +3,9 @@ package config
 import (
 	"net/http"
 
-	cacheLib "github.com/go-redis/cache/v9"
 	"go.uber.org/zap"
 
+	cache "timble/internal/connection/cache"
 	postgres "timble/internal/connection/postgres"
 	redis "timble/internal/connection/redis"
 	"timble/internal/utils"
@@ -24,7 +24,7 @@ type UsersRESTInterface interface {
 	Login(w http.ResponseWriter, r *http.Request)
 }
 
-func NewUsersHandler(auth *utils.AuthConfig, logger *zap.Logger, cache *cacheLib.Cache, redisClient redis.RedisInterface, postgresClient postgres.PostgresInterface) *handler.UsersResource {
+func NewUsersHandler(auth *utils.AuthConfig, logger *zap.Logger, cache cache.CacheInterface, redisClient redis.RedisInterface, postgresClient postgres.PostgresInterface) *handler.UsersResource {
 	redisRepository := repository.NewRedisRepository(redisClient)
 	cacheRepository := repository.NewCacheRepository(cache)
 	postgresRepository := repository.NewPostgresRepository(postgresClient)

@@ -15,26 +15,26 @@ type RedisInterface struct {
 	mock.Mock
 }
 
-// ExpireAt provides a mock function with given fields: ctx, key, tm
-func (_m *RedisInterface) ExpireAt(ctx context.Context, key string, tm time.Time) (bool, error) {
+// Expire provides a mock function with given fields: ctx, key, tm
+func (_m *RedisInterface) Expire(ctx context.Context, key string, tm time.Duration) (bool, error) {
 	ret := _m.Called(ctx, key, tm)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ExpireAt")
+		panic("no return value specified for Expire")
 	}
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, time.Time) (bool, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, time.Duration) (bool, error)); ok {
 		return rf(ctx, key, tm)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, time.Time) bool); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, time.Duration) bool); ok {
 		r0 = rf(ctx, key, tm)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, time.Time) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, time.Duration) error); ok {
 		r1 = rf(ctx, key, tm)
 	} else {
 		r1 = ret.Error(1)

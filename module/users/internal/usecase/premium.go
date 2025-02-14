@@ -37,7 +37,7 @@ func (usecase PremiumUc) Grant(ctx context.Context, userID uint) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	usecase.cache.Set(buildPremiumCacheKey(userID), []byte(PREMIUM_TRUE_STRING), premiumExpCache)
+	usecase.cache.Set(ctx, buildPremiumCacheKey(userID), []byte(PREMIUM_TRUE_STRING), premiumExpCache)
 	return nil
 }
 
@@ -50,6 +50,6 @@ func (usecase PremiumUc) Unsubscribe(ctx context.Context, userID uint) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	usecase.cache.Set(buildPremiumCacheKey(userID), []byte(PREMIUM_FALSE_STRING), premiumExpCache)
+	usecase.cache.Set(ctx, buildPremiumCacheKey(userID), []byte(PREMIUM_FALSE_STRING), premiumExpCache)
 	return nil
 }

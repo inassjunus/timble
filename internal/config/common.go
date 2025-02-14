@@ -5,10 +5,10 @@ import (
 
 	"github.com/caarlos0/env/v6"
 
-	"github.com/go-redis/cache/v9"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	cache "timble/internal/connection/cache"
 	postgres "timble/internal/connection/postgres"
 	redis "timble/internal/connection/redis"
 	"timble/internal/utils"
@@ -16,7 +16,7 @@ import (
 
 type ServiceConnections struct {
 	LoggerClient   *zap.Logger
-	CacheClient    *cache.Cache
+	CacheClient    *cache.CacheClient
 	RedisClient    *redis.RedisClient
 	PostgresClient *postgres.PostgresClient
 
@@ -117,15 +117,10 @@ func NewServiceConnections() *ServiceConnections {
 	}
 
 	// redis for cache
-	redisCacheClient, err := redis.NewClient(redisConfig.Host, redisConfig.Port, redisConfig.Timeout, redisConfig.DBCache)
+	cacheClient, err := cache.NewClient(redisConfig.Host, redisConfig.Port, redisConfig.Timeout, redisConfig.DBCache)
 	if err != nil {
 		panic(err)
 	}
-
-	cacheClient := cache.New(&cache.Options{
-		Redis:      redisCacheClient.Client,
-		LocalCache: cache.NewTinyLFU(1000, time.Minute),
-	})
 
 	postgresClient := &postgres.PostgresClient{
 		Name:             "postgres",

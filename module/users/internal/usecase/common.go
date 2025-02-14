@@ -26,8 +26,8 @@ type RedisRepository interface {
 }
 
 type CacheRepository interface {
-	Get(key string) ([]byte, error)
-	Set(key string, data []byte, expired time.Duration) error
+	Get(ctx context.Context, key string) (res []byte, err error)
+	Set(ctx context.Context, key string, data []byte, exp time.Duration) error
 }
 
 type PostgresRepository interface {

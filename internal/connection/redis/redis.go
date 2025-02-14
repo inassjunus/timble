@@ -15,7 +15,7 @@ import (
 type RedisInterface interface {
 	Set(ctx context.Context, key string, value interface{}, expire time.Duration) (string, error)
 	Get(ctx context.Context, key string) (string, error)
-	ExpireAt(ctx context.Context, key string, tm time.Time) (bool, error)
+	Expire(ctx context.Context, key string, tm time.Duration) (bool, error)
 	Incr(ctx context.Context, key string) (int64, error)
 }
 
@@ -69,9 +69,9 @@ func (r *RedisClient) Incr(ctx context.Context, key string) (int64, error) {
 }
 
 // Expire a key-value pair to redis
-func (r *RedisClient) ExpireAt(ctx context.Context, key string, tm time.Time) (bool, error) {
+func (r *RedisClient) Expire(ctx context.Context, key string, tm time.Duration) (bool, error) {
 	metricInfo := utils.NewClientMetric(r.Name, "expire-at")
-	res, err := r.Client.ExpireAt(ctx, key, tm).Result()
+	res, err := r.Client.Expire(ctx, key, tm).Result()
 	err = r.wrapError(err)
 	metricInfo.TrackClientWithError(err)
 	return res, err

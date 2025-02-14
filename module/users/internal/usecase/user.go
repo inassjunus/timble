@@ -85,7 +85,7 @@ func (usecase UserUc) Show(ctx context.Context, userID uint) (*entity.UserPublic
 
 func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) error {
 	// check premium status
-	isPremiumInCache, err := usecase.cache.Get(buildPremiumCacheKey(params.UserID))
+	isPremiumInCache, err := usecase.cache.Get(ctx, buildPremiumCacheKey(params.UserID))
 	isPremiumInCacheStr := string(isPremiumInCache)
 	if err != nil || isPremiumInCacheStr == "" {
 		// check in db

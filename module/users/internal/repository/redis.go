@@ -23,14 +23,8 @@ func (repo *RedisRepository) Incr(ctx context.Context, key string, expire time.D
 		return res, errors.Wrap(err, "redis client error when incr")
 	}
 
-	if res == 1 {
-		loc, err := time.LoadLocation("Asia/Jakarta")
-		expireTime := time.Now()
-		if err == nil {
-			expireTime = expireTime.In(loc)
-		}
-		expireTime = expireTime.Add(expire)
-		repo.redisClient.ExpireAt(ctx, key, expireTime)
+	if res == 1 && expire != 0 {
+		repo.redisClient.Expire(ctx, key, expire)
 	}
 
 	return res, nil

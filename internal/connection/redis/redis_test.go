@@ -149,11 +149,11 @@ func TestRedisClient_Incr(t *testing.T) {
 	}
 }
 
-func TestRedisClient_ExpireAt(t *testing.T) {
+func TestRedisClient_Expire(t *testing.T) {
 	tests := []struct {
 		name           string
 		key            string
-		exp            time.Time
+		exp            time.Duration
 		mockErr        string
 		expectedValue  string
 		expectedResult bool
@@ -162,21 +162,21 @@ func TestRedisClient_ExpireAt(t *testing.T) {
 		{
 			name:           "normal case with new key",
 			key:            testKey2,
-			exp:            time.Now().Add(time.Minute),
+			exp:            time.Minute,
 			expectedValue:  "",
 			expectedResult: false,
 		},
 		{
 			name:           "normal case with existing key",
 			key:            testKey1,
-			exp:            time.Now().Add(time.Minute),
+			exp:            time.Minute,
 			expectedValue:  testMember1,
 			expectedResult: true,
 		},
 		{
 			name:           "error case",
 			key:            testKey1,
-			exp:            time.Now(),
+			exp:            0,
 			expectedResult: false,
 			expectedError:  errors.New("timeout"),
 			mockErr:        "timeout",
@@ -190,7 +190,7 @@ func TestRedisClient_ExpireAt(t *testing.T) {
 			client, _ := redis.NewClient(s.Host(), s.Port(), testRedisTimeout, "0")
 			s.SetError(tc.mockErr)
 
-			result, err := client.ExpireAt(context.Background(), tc.key, tc.exp)
+			result, err := client.Expire(context.Background(), tc.key, tc.exp)
 			if tc.expectedError != nil {
 				assert.NotNil(t, err)
 				assert.Equal(t, tc.expectedError.Error(), err.Error())
