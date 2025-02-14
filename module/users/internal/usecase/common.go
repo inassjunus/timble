@@ -8,22 +8,21 @@ import (
 	"timble/module/users/entity"
 )
 
+const (
+	PREMIUM_TRUE_STRING  = "true"
+	PREMIUM_FALSE_STRING = "false"
+	REACTION_LIMIT       = 10
+)
+
 var (
-	premiumExpCache = 24 * time.Hour
+	premiumExpCache       = 24 * time.Hour
+	reactionLimitExpCache = 24 * time.Hour
 )
 
 type RedisRepository interface {
-	ZAdd(ctx context.Context, key string, member interface{}, score float64) error
-	ZRevRange(ctx context.Context, key string, start, stop int64) ([]string, error)
-	ZRange(ctx context.Context, key string, start, stop int64) ([]string, error)
-	ZCard(ctx context.Context, key string) (int64, error)
-	SAdd(ctx context.Context, key string, member interface{}) error
-	SMembers(ctx context.Context, key string) ([]string, error)
 	Set(ctx context.Context, key string, value interface{}, expire time.Duration) (string, error)
 	Get(ctx context.Context, key string) (string, error)
-	Del(ctx context.Context, key string) (int64, error)
-	HSet(ctx context.Context, key string, field string, value interface{}) (int64, error)
-	HGet(ctx context.Context, key string, field string) (string, error)
+	Incr(ctx context.Context, key string, expire time.Duration) (int64, error)
 }
 
 type CacheRepository interface {
@@ -41,4 +40,13 @@ type PostgresRepository interface {
 
 func buildPremiumCacheKey(userID uint) string {
 	return fmt.Sprintf("premium:%d", userID)
+}
+
+func buildReactionLimitCacheKey(userID uint) string {
+	currentTime := time.Now()
+	loc, err := time.LoadLocation("Asia/Jakarta")
+	if err == nil {
+		currentTime = currentTime.In(loc)
+	}
+	return fmt.Sprintf("reaction:%s:%d", currentTime.Format("2006-01-02"), userID)
 }

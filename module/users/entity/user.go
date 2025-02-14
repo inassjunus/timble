@@ -2,6 +2,7 @@ package entity
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 )
 
@@ -34,5 +35,15 @@ type UserToken struct {
 func NewUserPayload(body io.Reader) (UserParams, error) {
 	params := UserParams{}
 	err := json.NewDecoder(body).Decode(&params)
-	return params, err
+	if err != nil {
+		return params, err
+	}
+	if len(params.Username) == 0 {
+		return params, errors.New("Username can not be blank")
+	}
+
+	if len(params.Password) <= 10 {
+		return params, errors.New("Password must be more than 10 characters")
+	}
+	return params, nil
 }

@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/pkg/errors"
 	log "go.uber.org/zap"
@@ -82,16 +84,24 @@ func (usecase UserUc) Show(ctx context.Context, userID uint) (*entity.UserPublic
 }
 
 func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) error {
-	// check premium here
-	// if not premium, check for limit in redis
-
-	userData, err := usecase.db.GetUserByID(params.UserID)
-	if err != nil {
-		return errors.WithStack(err)
+	// check premium status
+	isPremiumInCache, err := usecase.cache.Get(buildPremiumCacheKey(params.UserID))
+	isPremiumInCacheStr := string(isPremiumInCache)
+	if err != nil || isPremiumInCacheStr == "" {
+		// check in db
+		userData, err := usecase.db.GetUserByID(params.UserID)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		isPremiumInCacheStr = fmt.Sprintf("%t", userData.Premium)
 	}
 
-	if userData == nil {
-		return errors.New("User not found")
+	if isPremiumInCacheStr != PREMIUM_TRUE_STRING {
+		limitStr, _ := usecase.redis.Get(ctx, buildReactionLimitCacheKey(params.UserID))
+		limit, _ := strconv.Atoi(limitStr)
+		if limit >= REACTION_LIMIT {
+			return errors.New("Reaction limit exceeded")
+		}
 	}
 
 	targetUserData, err := usecase.db.GetUserByID(params.TargetID)
@@ -113,7 +123,7 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 		return errors.WithStack(err)
 	}
 
-	// update cache here
+	usecase.redis.Incr(ctx, buildReactionLimitCacheKey(params.UserID), reactionLimitExpCache)
 
 	return nil
 }

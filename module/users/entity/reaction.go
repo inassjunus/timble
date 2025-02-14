@@ -2,6 +2,7 @@ package entity
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 )
 
@@ -21,9 +22,9 @@ type ReactionParams struct {
 
 var (
 	ReactionTypes = map[int]bool{
-		1: true, // pass
+		0: true, // undecided
+		1: true, // not interested (pass)
 		2: true, // like
-		3: true, // block
 	}
 )
 
@@ -32,5 +33,16 @@ func NewReactionPayload(body io.Reader, userID uint) (ReactionParams, error) {
 		UserID: userID,
 	}
 	err := json.NewDecoder(body).Decode(&params)
-	return params, err
+	if err != nil {
+		return params, err
+	}
+
+	if params.TargetID <= 0 {
+		return params, errors.New("Invalid target user")
+	}
+
+	if !ReactionTypes[params.Type] {
+		return params, errors.New("Invalid reaction type")
+	}
+	return params, nil
 }

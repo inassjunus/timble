@@ -33,6 +33,6 @@ func main() {
 	}(restServer)
 
 	<-sigChan
-	log.Println("Received terminate, graceful shutdown")
+	log.Println("Received terminate command, graceful shutdown")
 
 }

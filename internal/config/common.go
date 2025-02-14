@@ -66,12 +66,6 @@ func LoadAuthConfig() authConfig {
 	return authConfig
 }
 
-func LoadServiceConfig() serviceConfig {
-	serviceConfig := serviceConfig{}
-	env.Parse(&serviceConfig)
-	return serviceConfig
-}
-
 func LoadRestServerConfig() restServerConfig {
 	restServerCfg := restServerConfig{}
 	env.Parse(&restServerCfg)
