@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"net/http"
 
 	cacheLib "github.com/go-redis/cache/v9"
@@ -25,10 +24,6 @@ type UsersRESTInterface interface {
 	Login(w http.ResponseWriter, r *http.Request)
 }
 
-type UsersScriptInterface interface {
-	PopulateUsers(ctx context.Context, filePath string, logInterval int) error
-}
-
 func NewUsersHandler(auth *utils.AuthConfig, logger *zap.Logger, cache *cacheLib.Cache, redisClient *redis.RedisClient, postgresClient *postgres.PostgresClient) *handler.UsersResource {
 	redisRepository := repository.NewRedisRepository(redisClient)
 	cacheRepository := repository.NewCacheRepository(cache)
@@ -40,12 +35,3 @@ func NewUsersHandler(auth *utils.AuthConfig, logger *zap.Logger, cache *cacheLib
 
 	return handler.NewUsersResource(authUsecase, premiumUsecase, userUsecase, logger)
 }
-
-// func NewScriptHandler(logger *log.Logger, redisClient *redis.RedisClient, postgresClient *postgres.PostgresClient) *handler.UsersScriptResource {
-//   redisRepository := repository.NewRedisRepository(redisClient)
-//   postgresRepository := repository.NewPostgresRepository(postgresClient)
-
-//   userUsecase := usecase.NewUserUsecase(redisRepository, postgresRepository, logger)
-
-//   return handler.NewUserScriptResource(userUsecase, logger)
-// }
