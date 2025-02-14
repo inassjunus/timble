@@ -4,23 +4,24 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"time"
 )
 
 type User struct {
-	ID             uint   `json:"id"`
-	Username       string `json:"username"`
-	Premium        bool   `json:"premium"`
-	HashedPassword string `json:"hashed_password"`
-	CreatedAt      string `json:"created_at"`
-	UpdatedAt      string `json:"updated_at"`
+	ID             uint      `json:"id"`
+	Username       string    `json:"username"`
+	Premium        bool      `json:"premium"`
+	HashedPassword string    `json:"hashed_password"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type UserPublic struct {
-	ID        uint   `json:"id"`
-	Username  string `json:"username"`
-	Premium   bool   `json:"premium"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        uint      `json:"id"`
+	Username  string    `json:"username"`
+	Premium   bool      `json:"premium"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type UserParams struct {

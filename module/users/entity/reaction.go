@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"time"
 )
 
 type UserReaction struct {
-	UserID    uint   `json:"user_id"`
-	TargetID  uint   `json:"target_id"`
-	Type      int    `json:"type"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	UserID    uint      `json:"user_id"`
+	TargetID  uint      `json:"target_id"`
+	Type      int       `json:"type"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type ReactionParams struct {

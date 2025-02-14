@@ -9,8 +9,8 @@ import (
 
 	redis "timble/internal/connection/redis"
 	"timble/internal/utils"
-	mocksCache "timble/mocks/internal_/connection/cache"
-	mocksPostgre "timble/mocks/internal_/connection/postgres"
+	mockscache "timble/mocks/internal_/connection/cache"
+	mockspostgre "timble/mocks/internal_/connection/postgres"
 	"timble/module/users/config"
 	"timble/module/users/internal/handler"
 )
@@ -27,8 +27,8 @@ func TestNewSearchTuningRESTHandler(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			redisClient, _ := redis.NewClient(s.Host(), s.Port(), "200ms", "0")
-			cacheClient := mocksCache.NewCacheInterface(t)
-			postgresClient := mocksPostgre.NewPostgresInterface(t)
+			cacheClient := mockscache.NewCacheInterface(t)
+			postgresClient := mockspostgre.NewPostgresInterface(t)
 
 			result := config.NewUsersHandler(&utils.AuthConfig{}, &zap.Logger{}, cacheClient, redisClient, postgresClient)
 
