@@ -37,7 +37,7 @@ func NewReactionPayload(body io.Reader, userID uint) (ReactionParams, error) {
 		return params, err
 	}
 
-	if params.TargetID <= 0 {
+	if params.TargetID <= 0 || params.TargetID == userID {
 		return params, errors.New("Invalid target user")
 	}
 

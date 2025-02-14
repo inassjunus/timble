@@ -24,7 +24,7 @@ type UsersRESTInterface interface {
 	Login(w http.ResponseWriter, r *http.Request)
 }
 
-func NewUsersHandler(auth *utils.AuthConfig, logger *zap.Logger, cache *cacheLib.Cache, redisClient *redis.RedisClient, postgresClient *postgres.PostgresClient) *handler.UsersResource {
+func NewUsersHandler(auth *utils.AuthConfig, logger *zap.Logger, cache *cacheLib.Cache, redisClient redis.RedisInterface, postgresClient postgres.PostgresInterface) *handler.UsersResource {
 	redisRepository := repository.NewRedisRepository(redisClient)
 	cacheRepository := repository.NewCacheRepository(cache)
 	postgresRepository := repository.NewPostgresRepository(postgresClient)

@@ -3,7 +3,7 @@ REST_DIR := cmd/rest
 MAIN_REST := "$(CURDIR)/$(REST_DIR)"
 PKG := "$(PROJECT_NAME)"
 OUTPUT_DIR := "deploy/_output"
-PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
+PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v /mocks/)
 SDIRS = $(shell ls scripts)
 export VAR_SCRIPTS  ?= $(SDIRS:/=)
 

@@ -16,6 +16,21 @@ type StandardError struct {
 	details []*ErrorDetails
 }
 
+var (
+	ErrorInternalServerResponse = &StandardError{
+		details: []*ErrorDetails{
+			&ErrorDetails{
+				Message: "internal server error, please check the server logs",
+				Code:    "INTERNAL SERVER ERROR",
+			},
+		}}
+
+	ErrUnauthenticated = ErrorDetails{
+		Message: "Invalid or missing required autherication",
+		Code:    "Unauthorized",
+	}
+)
+
 // Error implement error interface
 func (e *ErrorDetails) Error() string {
 	return e.Message
@@ -37,16 +52,6 @@ func (s *StandardError) Error() string {
 
 	return strings.TrimSpace(buff.String())
 }
-
-var (
-	ErrorInternalServerResponse = &StandardError{
-		details: []*ErrorDetails{
-			&ErrorDetails{
-				Message: "internal server error, please check the server logs",
-				Code:    "INTERNAL SERVER ERROR",
-			},
-		}}
-)
 
 func BadRequestParamError(message, field string) *StandardError {
 	return &StandardError{

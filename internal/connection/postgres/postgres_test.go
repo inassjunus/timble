@@ -27,7 +27,7 @@ func TestPostgres_NewClient(t *testing.T) {
 
 	tests := []struct {
 		name                 string
-		expectedErr          error
+		expectedError        error
 		mockeGormOpenFunc    func(dialector gorm.Dialector, opts ...gorm.Option) (db *gorm.DB, err error)
 		mockPostgresOpenFunc func(dsn string) gorm.Dialector
 		mockGetGormDBFunc    func(db *gorm.DB) (*sql.DB, error)
@@ -45,8 +45,8 @@ func TestPostgres_NewClient(t *testing.T) {
 			},
 		},
 		{
-			name:        "error gorm open",
-			expectedErr: errors.New("error gorm open"),
+			name:          "error gorm open",
+			expectedError: errors.New("error gorm open"),
 			mockeGormOpenFunc: func(dialector gorm.Dialector, opts ...gorm.Option) (db *gorm.DB, err error) {
 				return nil, errors.New("error gorm open")
 			},
@@ -58,8 +58,8 @@ func TestPostgres_NewClient(t *testing.T) {
 			},
 		},
 		{
-			name:        "error gorm DB",
-			expectedErr: errors.New("error gorm DB"),
+			name:          "error gorm DB",
+			expectedError: errors.New("error gorm DB"),
 			mockeGormOpenFunc: func(dialector gorm.Dialector, opts ...gorm.Option) (db *gorm.DB, err error) {
 				return gormDb, nil
 			},
@@ -92,7 +92,7 @@ func TestPostgres_NewClient(t *testing.T) {
 				15,
 			)
 
-			if tt.expectedErr != nil {
+			if tt.expectedError != nil {
 				assert.NotNil(t, err)
 			} else {
 				assert.NotNil(t, client.Client)
@@ -134,7 +134,7 @@ func TestPostgres_GetFirst(t *testing.T) {
 		name           string
 		rows           *sqlmock.Rows
 		expectedResult string
-		expectedErr    error
+		expectedError  error
 	}{
 		{
 			name:           "successfully get first row",
@@ -146,9 +146,9 @@ func TestPostgres_GetFirst(t *testing.T) {
 			rows: sqlmock.NewRows([]string{"name"}),
 		},
 		{
-			name:        "unexpected error from db",
-			rows:        sqlmock.NewRows([]string{"namez"}).AddRow(name),
-			expectedErr: errors.New("model accessible fields required"),
+			name:          "unexpected error from db",
+			rows:          sqlmock.NewRows([]string{"namez"}).AddRow(name),
+			expectedError: errors.New("model accessible fields required"),
 		},
 	}
 
@@ -169,7 +169,7 @@ func TestPostgres_GetFirst(t *testing.T) {
 
 			record := &testStruct{}
 			err := client.GetFirst(record, "name = ?", name)
-			if tc.expectedErr != nil {
+			if tc.expectedError != nil {
 				assert.NotNil(t, err)
 			} else {
 				assert.Nil(t, err)

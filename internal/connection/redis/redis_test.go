@@ -36,7 +36,7 @@ func TestRedisClient_NewClient(t *testing.T) {
 		expectedAddr    string
 		expectedDB      int
 		expectedTimeout time.Duration
-		expectedErr     error
+		expectedError   error
 	}{
 		{
 			name:            "normal case",
@@ -49,12 +49,12 @@ func TestRedisClient_NewClient(t *testing.T) {
 			redisTimeout:    testRedisTimeout,
 		},
 		{
-			name:         "error host case",
-			redisHost:    ":/:",
-			redisPort:    "123",
-			redisDB:      "0",
-			redisTimeout: testRedisTimeout,
-			expectedErr:  errors.New("dial tcp: address :/::123: too many colons in address"),
+			name:          "error host case",
+			redisHost:     ":/:",
+			redisPort:     "123",
+			redisDB:       "0",
+			redisTimeout:  testRedisTimeout,
+			expectedError: errors.New("dial tcp: address :/::123: too many colons in address"),
 		},
 		{
 			name:            "error timeout format case",
@@ -80,12 +80,12 @@ func TestRedisClient_NewClient(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := redis.NewClient(tc.redisHost, tc.redisPort, tc.redisTimeout, tc.redisDB)
-			if tc.expectedErr != nil {
-				assert.NotEqual(t, err, nil)
-				assert.Equal(t, tc.expectedErr.Error(), err.Error())
+			if tc.expectedError != nil {
+				assert.NotNil(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
 			} else {
-				assert.NotEqual(t, nil, result)
-				assert.Equal(t, nil, err)
+				assert.NotNil(t, result)
+				assert.Nil(t, err)
 				assert.Equal(t, tc.expectedAddr, result.Client.Options().Addr)
 				assert.Equal(t, tc.expectedDB, result.Client.Options().DB)
 				assert.Equal(t, tc.expectedTimeout, result.Client.Options().ReadTimeout)
@@ -103,7 +103,7 @@ func TestRedisClient_Incr(t *testing.T) {
 		mockErr        string
 		expectedValue  string
 		expectedResult int64
-		expectedErr    error
+		expectedError  error
 	}{
 		{
 			name:           "normal case with new key",
@@ -121,7 +121,7 @@ func TestRedisClient_Incr(t *testing.T) {
 			name:           "error case",
 			key:            testKey1,
 			expectedResult: 0,
-			expectedErr:    errors.New("timeout"),
+			expectedError:  errors.New("timeout"),
 			mockErr:        "timeout",
 		},
 	}
@@ -134,11 +134,11 @@ func TestRedisClient_Incr(t *testing.T) {
 			s.SetError(tc.mockErr)
 
 			result, err := client.Incr(context.Background(), tc.key)
-			if tc.expectedErr != nil {
-				assert.NotEqual(t, err, nil)
-				assert.Equal(t, tc.expectedErr.Error(), err.Error())
+			if tc.expectedError != nil {
+				assert.NotNil(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
 			} else {
-				assert.Equal(t, nil, err)
+				assert.Nil(t, err)
 				assert.Equal(t, tc.expectedResult, result)
 				val, _ := s.Get(tc.key)
 				assert.Equal(t, tc.expectedValue, val)
@@ -157,7 +157,7 @@ func TestRedisClient_ExpireAt(t *testing.T) {
 		mockErr        string
 		expectedValue  string
 		expectedResult bool
-		expectedErr    error
+		expectedError  error
 	}{
 		{
 			name:           "normal case with new key",
@@ -178,7 +178,7 @@ func TestRedisClient_ExpireAt(t *testing.T) {
 			key:            testKey1,
 			exp:            time.Now(),
 			expectedResult: false,
-			expectedErr:    errors.New("timeout"),
+			expectedError:  errors.New("timeout"),
 			mockErr:        "timeout",
 		},
 	}
@@ -191,11 +191,11 @@ func TestRedisClient_ExpireAt(t *testing.T) {
 			s.SetError(tc.mockErr)
 
 			result, err := client.ExpireAt(context.Background(), tc.key, tc.exp)
-			if tc.expectedErr != nil {
-				assert.NotEqual(t, err, nil)
-				assert.Equal(t, tc.expectedErr.Error(), err.Error())
+			if tc.expectedError != nil {
+				assert.NotNil(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
 			} else {
-				assert.Equal(t, nil, err)
+				assert.Nil(t, err)
 				assert.Equal(t, tc.expectedResult, result)
 				val, _ := s.Get(tc.key)
 				assert.Equal(t, tc.expectedValue, val)
@@ -213,7 +213,7 @@ func TestRedisClient_Set(t *testing.T) {
 		value          string
 		mockErr        string
 		expectedResult string
-		expectedErr    error
+		expectedError  error
 	}{
 		{
 			name:           "normal case with new key",
@@ -232,7 +232,7 @@ func TestRedisClient_Set(t *testing.T) {
 			key:            testKey1,
 			value:          testMember2,
 			expectedResult: "",
-			expectedErr:    errors.New("timeout"),
+			expectedError:  errors.New("timeout"),
 			mockErr:        "timeout",
 		},
 	}
@@ -245,11 +245,11 @@ func TestRedisClient_Set(t *testing.T) {
 			s.SetError(tc.mockErr)
 
 			result, err := client.Set(context.Background(), tc.key, tc.value, 0)
-			if tc.expectedErr != nil {
-				assert.NotEqual(t, err, nil)
-				assert.Equal(t, tc.expectedErr.Error(), err.Error())
+			if tc.expectedError != nil {
+				assert.NotNil(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
 			} else {
-				assert.Equal(t, nil, err)
+				assert.Nil(t, err)
 				assert.Equal(t, tc.expectedResult, result)
 				val, _ := s.Get(tc.key)
 				assert.Equal(t, tc.value, val)
@@ -266,7 +266,7 @@ func TestRedisClient_Get(t *testing.T) {
 		key            string
 		mockErr        string
 		expectedResult string
-		expectedErr    error
+		expectedError  error
 	}{
 		{
 			name:           "normal case with non existing key",
@@ -282,7 +282,7 @@ func TestRedisClient_Get(t *testing.T) {
 			name:           "error case",
 			key:            testKey1,
 			expectedResult: "",
-			expectedErr:    errors.New("timeout"),
+			expectedError:  errors.New("timeout"),
 			mockErr:        "timeout",
 		},
 	}
@@ -295,11 +295,11 @@ func TestRedisClient_Get(t *testing.T) {
 			s.SetError(tc.mockErr)
 
 			result, err := client.Get(context.Background(), tc.key)
-			if tc.expectedErr != nil {
-				assert.NotEqual(t, err, nil)
-				assert.Equal(t, tc.expectedErr.Error(), err.Error())
+			if tc.expectedError != nil {
+				assert.NotNil(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
 			} else {
-				assert.Equal(t, nil, err)
+				assert.Nil(t, err)
 				assert.Equal(t, tc.expectedResult, result)
 			}
 
