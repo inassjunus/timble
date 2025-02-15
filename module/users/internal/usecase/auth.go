@@ -12,7 +12,7 @@ import (
 )
 
 type AuthUsecase interface {
-	Login(ctx context.Context, params entity.UserParams) (entity.UserToken, error)
+	Login(ctx context.Context, params entity.UserLoginParams) (entity.UserToken, error)
 }
 
 type AuthUc struct {
@@ -29,11 +29,15 @@ func NewAuthUsecase(auth *utils.AuthConfig, db PostgresRepository, logger *log.L
 	}
 }
 
-func (usecase AuthUc) Login(ctx context.Context, params entity.UserParams) (entity.UserToken, error) {
+func (usecase AuthUc) Login(ctx context.Context, params entity.UserLoginParams) (entity.UserToken, error) {
 	userToken := entity.UserToken{}
 	userData, err := usecase.db.GetUserByUsername(params.Username)
 	if err != nil {
 		return userToken, errors.WithStack(err)
+	}
+
+	if userData == nil {
+		return userToken, errors.New("Invalid username or password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userData.HashedPassword), []byte(params.Password))
@@ -41,10 +45,7 @@ func (usecase AuthUc) Login(ctx context.Context, params entity.UserParams) (enti
 		return userToken, errors.New("Invalid username or password")
 	}
 
-	token, err := usecase.auth.GenerateToken(userData.ID)
-	if err != nil {
-		return userToken, errors.Wrap(err, "Error generating token")
-	}
+	token, _ := usecase.auth.GenerateToken(userData.ID)
 
 	userToken.Token = token
 

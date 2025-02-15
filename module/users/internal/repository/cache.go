@@ -4,54 +4,36 @@ import (
 	"context"
 	"time"
 
-	"timble/internal/utils"
+	"timble/internal/connection/cache"
 
-	cacheLib "github.com/go-redis/cache/v9"
-)
-
-var (
-	ignoredErrors = map[string]bool{
-		"cache miss": true, // this error is ignorable since it is expected that cache is empty
-	}
+	"github.com/pkg/errors"
 )
 
 type CacheRepository struct {
-	cache *cacheLib.Cache
+	cacheClient cache.CacheInterface
 }
 
-func NewCacheRepository(cache *cacheLib.Cache) *CacheRepository {
+func NewCacheRepository(cacheClient cache.CacheInterface) *CacheRepository {
 	return &CacheRepository{
-		cache: cache,
+		cacheClient: cacheClient,
 	}
 }
 
-// Get retrieves purchase history stored in cache by customer ID
-func (repo *CacheRepository) Get(key string) (res []byte, err error) {
-	metricInfo := utils.NewClientMetric("cache", "get-first")
-	err = repo.cache.Get(context.Background(), key, &res)
-	err = repo.wrapError(err)
-	metricInfo.TrackClientWithError(err)
-	return res, err
-}
-
-// Set purchase history in cache by customer ID
-func (repo *CacheRepository) Set(key string, data []byte, exp time.Duration) (err error) {
-	metricInfo := utils.NewClientMetric("cache", "set")
-
-	cacheItem := &cacheLib.Item{
-		Ctx:   context.Background(),
-		Key:   key,
-		Value: data,
-		TTL:   exp,
+// Get data stored from cache
+func (repo *CacheRepository) Get(ctx context.Context, key string) ([]byte, error) {
+	res, err := repo.cacheClient.Get(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "cache client error when get")
 	}
-	err = repo.cache.Set(cacheItem)
-	metricInfo.TrackClientWithError(err)
-	return err
+
+	return res, nil
 }
 
-func (repo *CacheRepository) wrapError(err error) error {
-	if err != nil && !ignoredErrors[err.Error()] {
-		return err
+// Set data in cache
+func (repo *CacheRepository) Set(ctx context.Context, key string, data []byte, expire time.Duration) error {
+	err := repo.cacheClient.Set(ctx, key, data, expire)
+	if err != nil {
+		return errors.Wrap(err, "cache client error when set")
 	}
 
 	return nil

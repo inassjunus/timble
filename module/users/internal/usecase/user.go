@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/pkg/errors"
 	log "go.uber.org/zap"
@@ -12,7 +13,7 @@ import (
 )
 
 type UserUsecase interface {
-	Create(ctx context.Context, params entity.UserParams) (entity.UserToken, error)
+	Create(ctx context.Context, params entity.UserRegistrationParams) (entity.UserToken, error)
 	Show(ctx context.Context, userID uint) (*entity.UserPublic, error)
 	React(ctx context.Context, params entity.ReactionParams) error
 }
@@ -35,15 +36,16 @@ func NewUserUsecase(auth *utils.AuthConfig, redis RedisRepository, db PostgresRe
 	}
 }
 
-func (usecase UserUc) Create(ctx context.Context, params entity.UserParams) (entity.UserToken, error) {
+func (usecase UserUc) Create(ctx context.Context, params entity.UserRegistrationParams) (entity.UserToken, error) {
 	userToken := entity.UserToken{}
-	bytes, err := bcrypt.GenerateFromPassword([]byte(params.Password), 14)
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(params.Password), 14)
 	userData := entity.User{
 		Username:       params.Username,
+		Email:          params.Email,
 		HashedPassword: string(bytes),
 	}
 
-	err = usecase.db.InsertUser(userData)
+	err := usecase.db.InsertUser(userData)
 	if err != nil {
 		return userToken, errors.WithStack(err)
 	}
@@ -53,11 +55,7 @@ func (usecase UserUc) Create(ctx context.Context, params entity.UserParams) (ent
 		return userToken, errors.WithStack(err)
 	}
 
-	token, err := usecase.auth.GenerateToken(savedData.ID)
-	if err != nil {
-		return userToken, errors.Wrap(err, "Error generating token")
-	}
-
+	token, _ := usecase.auth.GenerateToken(savedData.ID)
 	userToken.Token = token
 
 	return userToken, nil
@@ -73,6 +71,7 @@ func (usecase UserUc) Show(ctx context.Context, userID uint) (*entity.UserPublic
 	userPublicData := &entity.UserPublic{
 		ID:        userData.ID,
 		Username:  userData.Username,
+		Email:     userData.Email,
 		Premium:   userData.Premium,
 		CreatedAt: userData.CreatedAt,
 		UpdatedAt: userData.UpdatedAt,
@@ -82,16 +81,25 @@ func (usecase UserUc) Show(ctx context.Context, userID uint) (*entity.UserPublic
 }
 
 func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) error {
-	// check premium here
-	// if not premium, check for limit in redis
-
-	userData, err := usecase.db.GetUserByID(params.UserID)
-	if err != nil {
-		return errors.WithStack(err)
+	// check premium status
+	isPremiumBytes, err := usecase.cache.Get(ctx, BuildPremiumCacheKey(params.UserID))
+	isPremiumStr := string(isPremiumBytes)
+	isPremium := isPremiumStr == PREMIUM_TRUE_STRING
+	if err != nil || isPremiumStr == "" {
+		// check in db
+		userData, err := usecase.db.GetUserByID(params.UserID)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		isPremium = userData.Premium
 	}
 
-	if userData == nil {
-		return errors.New("User not found")
+	if !isPremium {
+		limitStr, _ := usecase.redis.Get(ctx, BuildReactionLimitCacheKey(params.UserID))
+		limit, _ := strconv.Atoi(limitStr)
+		if limit >= REACTION_LIMIT {
+			return errors.New("Reaction limit exceeded")
+		}
 	}
 
 	targetUserData, err := usecase.db.GetUserByID(params.TargetID)
@@ -103,17 +111,14 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 		return errors.New("Target user not found")
 	}
 
-	// validate reaction type
-	if valid := entity.ReactionTypes[params.Type]; !valid {
-		return errors.New("Invalid reaction")
-	}
-
 	err = usecase.db.UpsertUserReaction(params)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	// update cache here
+	if !isPremium {
+		usecase.redis.Incr(ctx, BuildReactionLimitCacheKey(params.UserID), reactionLimitExpCache)
+	}
 
 	return nil
 }

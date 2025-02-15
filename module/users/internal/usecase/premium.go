@@ -9,6 +9,10 @@ import (
 	"timble/module/users/entity"
 )
 
+const (
+	PREMIUM_COLUMN = "premium"
+)
+
 type PremiumUsecase interface {
 	Grant(ctx context.Context, userID uint) error
 	Unsubscribe(ctx context.Context, userID uint) error
@@ -33,11 +37,11 @@ func (usecase PremiumUc) Grant(ctx context.Context, userID uint) error {
 		ID:      userID,
 		Premium: true,
 	}
-	err := usecase.db.UpdateUser(userData)
+	err := usecase.db.UpdateUser(userData, PREMIUM_COLUMN, interface{}(userData.Premium))
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	usecase.cache.Set(buildPremiumCacheKey(userID), []byte("true"), premiumExpCache)
+	usecase.cache.Set(ctx, BuildPremiumCacheKey(userID), []byte(PREMIUM_TRUE_STRING), premiumExpCache)
 	return nil
 }
 
@@ -46,10 +50,10 @@ func (usecase PremiumUc) Unsubscribe(ctx context.Context, userID uint) error {
 		ID:      userID,
 		Premium: false,
 	}
-	err := usecase.db.UpdateUser(userData)
+	err := usecase.db.UpdateUser(userData, PREMIUM_COLUMN, interface{}(userData.Premium))
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	usecase.cache.Set(buildPremiumCacheKey(userID), []byte("false"), premiumExpCache)
+	usecase.cache.Set(ctx, BuildPremiumCacheKey(userID), []byte(PREMIUM_FALSE_STRING), premiumExpCache)
 	return nil
 }

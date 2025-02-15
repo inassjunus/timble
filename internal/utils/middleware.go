@@ -11,7 +11,6 @@ import (
 
 	middlewarev1 "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/pkg/errors"
 )
 
 func ReqBodyCtx(next http.Handler) http.Handler {
@@ -43,14 +42,14 @@ func Authentication(auth *AuthConfig) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenString := r.Header.Get("Authorization")
 			if tokenString == "" {
-				authFailed(w, errors.New("Missing token"))
+				authFailed(w)
 				return
 			}
 
 			// The token should be prefixed with "Bearer "
 			tokenParts := strings.Split(tokenString, " ")
 			if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-				authFailed(w, errors.New("Invalid token"))
+				authFailed(w)
 				return
 			}
 
@@ -58,7 +57,7 @@ func Authentication(auth *AuthConfig) func(next http.Handler) http.Handler {
 
 			claims, err := auth.VerifyToken(tokenString)
 			if err != nil {
-				authFailed(w, errors.New("Invalid token"))
+				authFailed(w)
 				return
 			}
 
@@ -68,8 +67,8 @@ func Authentication(auth *AuthConfig) func(next http.Handler) http.Handler {
 	}
 }
 
-func authFailed(w http.ResponseWriter, err error) {
-	errByte, _ := json.Marshal(err)
+func authFailed(w http.ResponseWriter) {
+	errByte, _ := json.Marshal(ErrUnauthenticated)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Write(errByte)

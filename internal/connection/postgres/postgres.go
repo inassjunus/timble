@@ -79,7 +79,7 @@ func (c *PostgresClient) GetFirst(record interface{}, condition string, args ...
 
 func (c *PostgresClient) Exec(query string, args ...interface{}) error {
 	metricInfo := utils.NewClientMetric(c.Name, "exec")
-	result := c.Client.Exec(query, args)
+	result := c.Client.Exec(query, args...)
 	err := c.wrapError(result.Error)
 	metricInfo.TrackClientWithError(err)
 	return err
