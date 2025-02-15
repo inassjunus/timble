@@ -110,3 +110,29 @@ make run-rest
 ```shell
 curl localhost:9090//health
 ```
+
+### Contribution
+#### Linting
+- Install [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) if you haven't
+```shell
+go install golang.org/x/tools/cmd/goimports@latest
+goimports -l -w .
+```
+- Always ensure the code complies with the Golang syntax & import convention by running this command before committing
+
+```shell
+make pretty
+```
+#### Testing
+
+Always run unit test before committing
+```shell
+make unit-test
+```
+Check for unit test coverage, we aim for 100% coverage
+```shell
+# display unit test coverage
+make coverage
+# display unit test coverage AND generate html file to check untested lines. The file will be names coverage.html, and you can open it on browser to see the untested lines
+make coverhtml
+```
