@@ -38,11 +38,11 @@ type PostgresRepository interface {
 	UpsertUserReaction(reaction entity.ReactionParams) error
 }
 
-func buildPremiumCacheKey(userID uint) string {
+func BuildPremiumCacheKey(userID uint) string {
 	return fmt.Sprintf("premium:%d", userID)
 }
 
-func buildReactionLimitCacheKey(userID uint) string {
+func BuildReactionLimitCacheKey(userID uint) string {
 	currentTime := time.Now()
 	loc, err := time.LoadLocation("Asia/Jakarta")
 	if err == nil {

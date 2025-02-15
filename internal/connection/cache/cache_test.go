@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	cache "timble/internal/connection/cache"
-	redis "timble/internal/connection/redis"
 )
 
 var (
@@ -108,9 +107,9 @@ func TestCacheClient_Set(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			s := miniredis.RunT(t)
-			s.Set(testKey1, testMember1)
 
 			client, _ := cache.NewClient(s.Host(), s.Port(), testRedisTimeout, "0")
+			s.Set(testKey1, testMember1)
 			s.SetError(tc.mockErr)
 
 			err := client.Set(context.Background(), tc.key, tc.value, 0)
@@ -133,23 +132,23 @@ func TestRedisClient_Get(t *testing.T) {
 		name           string
 		key            string
 		mockErr        string
-		expectedResult string
+		expectedResult []byte
 		expectedError  error
 	}{
 		{
 			name:           "normal case with non existing key",
 			key:            testKey2,
-			expectedResult: "",
+			expectedResult: []byte(nil),
 		},
 		{
 			name:           "normal case with existing key",
 			key:            testKey1,
-			expectedResult: testMember1,
+			expectedResult: []byte(testMember1),
 		},
 		{
 			name:           "error case",
 			key:            testKey1,
-			expectedResult: "",
+			expectedResult: []byte(""),
 			expectedError:  errors.New("timeout"),
 			mockErr:        "timeout",
 		},
@@ -157,9 +156,9 @@ func TestRedisClient_Get(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			s := miniredis.RunT(t)
-			s.Set(testKey1, testMember1)
 
-			client, _ := redis.NewClient(s.Host(), s.Port(), testRedisTimeout, "0")
+			client, _ := cache.NewClient(s.Host(), s.Port(), testRedisTimeout, "0")
+			s.Set(testKey1, testMember1)
 			s.SetError(tc.mockErr)
 
 			result, err := client.Get(context.Background(), tc.key)

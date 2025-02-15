@@ -20,7 +20,8 @@ type CacheInterface interface {
 
 var (
 	ignoredErrors = map[string]bool{
-		"cache miss": true, // this error is ignorable since it is expected that cache is sometimes empty
+		"cache miss":            true, // this error is ignorable since it is expected that cache is sometimes empty
+		"cache: key is missing": true,
 	}
 )
 
@@ -73,7 +74,8 @@ func (c *CacheClient) Set(ctx context.Context, key string, value interface{}, ex
 		TTL:   expire,
 	}
 	err := c.Client.Set(cacheItem)
-	metricInfo.TrackClientWithError(c.wrapError(err))
+	err = c.wrapError(err)
+	metricInfo.TrackClientWithError(err)
 	return err
 }
 
@@ -81,7 +83,8 @@ func (c *CacheClient) Set(ctx context.Context, key string, value interface{}, ex
 func (c *CacheClient) Get(ctx context.Context, key string) (res []byte, err error) {
 	metricInfo := utils.NewClientMetric("cache", "get-first")
 	err = c.Client.Get(context.Background(), key, &res)
-	metricInfo.TrackClientWithError(c.wrapError(err))
+	err = c.wrapError(err)
+	metricInfo.TrackClientWithError(err)
 	return res, err
 }
 

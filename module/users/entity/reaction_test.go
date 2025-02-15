@@ -34,6 +34,12 @@ func TestReaction_NewReactionPayload(t *testing.T) {
 			},
 		},
 		{
+			name: "error case with invalid body",
+			body: `{
+		      "type": 1`,
+			expectedErr: errors.New("Error on\ncode: PARAMETER_PARSING_FAILS; error: unexpected EOF; field: payload"),
+		},
+		{
 			name: "error case with invalid target ID",
 			body: `{
 		      "type": 1

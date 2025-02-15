@@ -46,7 +46,7 @@ func NewUserRegistrationPayload(body io.Reader) (UserRegistrationParams, error) 
 	params := UserRegistrationParams{}
 	err := json.NewDecoder(body).Decode(&params)
 	if err != nil {
-		return params, err
+		return params, utils.BadRequestParamError(err.Error(), "payload")
 	}
 
 	if len(params.Username) == 0 {
@@ -73,7 +73,7 @@ func NewUserLoginPayload(body io.Reader) (UserLoginParams, error) {
 	params := UserLoginParams{}
 	err := json.NewDecoder(body).Decode(&params)
 	if err != nil {
-		return params, err
+		return params, utils.BadRequestParamError(err.Error(), "payload")
 	}
 	if len(params.Username) == 0 {
 		return params, utils.BadRequestParamError("Username can not be blank", "username")

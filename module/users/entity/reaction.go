@@ -35,7 +35,7 @@ func NewReactionPayload(body io.Reader, userID uint) (ReactionParams, error) {
 	}
 	err := json.NewDecoder(body).Decode(&params)
 	if err != nil {
-		return params, err
+		return params, utils.BadRequestParamError(err.Error(), "payload")
 	}
 
 	if params.TargetID <= 0 || params.TargetID == userID {

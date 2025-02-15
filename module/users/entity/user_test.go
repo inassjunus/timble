@@ -33,6 +33,14 @@ func TestUser_NewUserRegistrationPayload(t *testing.T) {
 			},
 		},
 		{
+			name: "error case with invalid payload",
+			body: `
+		    {
+		      "email": "test@email.com",
+		      "password": "testpassword"`,
+			expectedErr: errors.New("Error on\ncode: PARAMETER_PARSING_FAILS; error: unexpected EOF; field: payload"),
+		},
+		{
 			name: "error case with missing username",
 			body: `
 		    {
@@ -115,6 +123,13 @@ func TestUser_NewUserLoginPayload(t *testing.T) {
 		    }
 		  `,
 			expectedErr: errors.New("Error on\ncode: PARAMETER_PARSING_FAILS; error: Username can not be blank; field: username"),
+		},
+		{
+			name: "error case with invalid payload",
+			body: `
+		    {
+		      "password": "testpassword" `,
+			expectedErr: errors.New("Error on\ncode: PARAMETER_PARSING_FAILS; error: unexpected EOF; field: payload"),
 		},
 		{
 			name: "error case with missing password",

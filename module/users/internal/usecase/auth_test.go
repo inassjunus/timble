@@ -106,6 +106,20 @@ func TestAuthUc_Login(t *testing.T) {
 			},
 			expectedErr: errors.New("Invalid username or password"),
 		},
+		{
+			name: "error case - error from db",
+			args: args{
+				params: entity.UserLoginParams{
+					Username: "testuser",
+					Password: "testpass",
+				},
+				config: defaultCfg,
+			},
+			mocked: mocked{
+				dbError: errors.New("DB failed"),
+			},
+			expectedErr: errors.New("DB failed"),
+		},
 	}
 	for _, tc := range tests {
 		db := mocksrepo.NewPostgresRepository(t)

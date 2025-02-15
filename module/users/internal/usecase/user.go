@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -83,19 +82,20 @@ func (usecase UserUc) Show(ctx context.Context, userID uint) (*entity.UserPublic
 
 func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) error {
 	// check premium status
-	isPremiumInCache, err := usecase.cache.Get(ctx, buildPremiumCacheKey(params.UserID))
-	isPremiumInCacheStr := string(isPremiumInCache)
-	if err != nil || isPremiumInCacheStr == "" {
+	isPremiumBytes, err := usecase.cache.Get(ctx, BuildPremiumCacheKey(params.UserID))
+	isPremiumStr := string(isPremiumBytes)
+	isPremium := isPremiumStr == PREMIUM_TRUE_STRING
+	if err != nil || isPremiumStr == "" {
 		// check in db
 		userData, err := usecase.db.GetUserByID(params.UserID)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		isPremiumInCacheStr = fmt.Sprintf("%t", userData.Premium)
+		isPremium = userData.Premium
 	}
 
-	if isPremiumInCacheStr != PREMIUM_TRUE_STRING {
-		limitStr, _ := usecase.redis.Get(ctx, buildReactionLimitCacheKey(params.UserID))
+	if !isPremium {
+		limitStr, _ := usecase.redis.Get(ctx, BuildReactionLimitCacheKey(params.UserID))
 		limit, _ := strconv.Atoi(limitStr)
 		if limit >= REACTION_LIMIT {
 			return errors.New("Reaction limit exceeded")
@@ -111,17 +111,14 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 		return errors.New("Target user not found")
 	}
 
-	// validate reaction type
-	if valid := entity.ReactionTypes[params.Type]; !valid {
-		return errors.New("Invalid reaction")
-	}
-
 	err = usecase.db.UpsertUserReaction(params)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	usecase.redis.Incr(ctx, buildReactionLimitCacheKey(params.UserID), reactionLimitExpCache)
+	if !isPremium {
+		usecase.redis.Incr(ctx, BuildReactionLimitCacheKey(params.UserID), reactionLimitExpCache)
+	}
 
 	return nil
 }

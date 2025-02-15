@@ -128,7 +128,7 @@ func TestPostgres_OpenPosgres(t *testing.T) {
 }
 
 func TestPostgres_GetFirst(t *testing.T) {
-	name := "foo"
+	name := "testname"
 
 	tests := []struct {
 		name           string
@@ -148,7 +148,7 @@ func TestPostgres_GetFirst(t *testing.T) {
 		{
 			name:          "unexpected error from db",
 			rows:          sqlmock.NewRows([]string{"namez"}).AddRow(name),
-			expectedError: errors.New("model accessible fields required"),
+			expectedError: errors.New("sql: Scan error on column index 0, name \"namez\": unsupported Scan, storing driver.Value type string into type *postgres_test.testStruct"),
 		},
 	}
 
@@ -171,11 +171,62 @@ func TestPostgres_GetFirst(t *testing.T) {
 			err := client.GetFirst(record, "name = ?", name)
 			if tc.expectedError != nil {
 				assert.NotNil(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
 			} else {
 				assert.Nil(t, err)
 				if tc.expectedResult != "" {
 					assert.Equal(t, tc.expectedResult, record.Name)
 				}
+			}
+		})
+	}
+}
+
+func TestPostgres_Exec(t *testing.T) {
+	query := `UPDATE "test_structs" SET name = $1 WHERE name = $2`
+	name := "testname"
+
+	tests := []struct {
+		name          string
+		query         string
+		expectedError error
+	}{
+		{
+			name:  "successfully exec query",
+			query: query,
+		},
+		{
+			name:          "unexpected error from db",
+			query:         query,
+			expectedError: errors.New("model accessible fields required"),
+		},
+	}
+
+	db, mock, gormDb, _ := openMockDB(t)
+	defer db.Close()
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.expectedError != nil {
+				mock.ExpectExec(regexp.QuoteMeta(tc.query)).
+					WithArgs(name, name).
+					WillReturnError(tc.expectedError)
+			} else {
+				mock.ExpectExec(regexp.QuoteMeta(tc.query)).
+					WithArgs(name, name).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			client := client.PostgresClient{
+				Client: gormDb,
+			}
+
+			err := client.Exec(query, name, name)
+			if tc.expectedError != nil {
+				assert.NotNil(t, err)
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
+			} else {
+				assert.Nil(t, err)
 			}
 		})
 	}

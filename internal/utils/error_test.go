@@ -8,6 +8,36 @@ import (
 	"timble/internal/utils"
 )
 
+func TestError_NewStandardError(t *testing.T) {
+	cases := []struct {
+		name           string
+		message        string
+		code           string
+		field          string
+		expectedResult *utils.StandardError
+	}{
+		{
+			name:    "normal case with all the fields",
+			message: "test error",
+			code:    "test error code",
+			field:   "test error field",
+			expectedResult: &utils.StandardError{
+				Message: "test error",
+				Code:    "test error code",
+				Field:   "test error field",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := utils.NewStandardError(tc.message, tc.code, tc.field)
+
+			assert.Equal(t, tc.expectedResult, actual)
+		})
+	}
+}
+
 func TestError_StandardError_Error(t *testing.T) {
 	cases := []struct {
 		name           string

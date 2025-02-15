@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -33,11 +32,7 @@ func (a *AuthConfig) VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	if err != nil {
 		return nil, err
 	}
+	claims, _ := token.Claims.(jwt.MapClaims)
 
-	// Validate the token
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims, nil
-	}
-
-	return nil, fmt.Errorf("Invalid token")
+	return claims, nil
 }

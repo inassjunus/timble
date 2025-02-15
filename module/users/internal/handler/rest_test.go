@@ -389,6 +389,19 @@ func TestUsersResource_Show(t *testing.T) {
 			},
 		},
 		{
+			name: "error case - user not found",
+			args: args{
+				args: 1,
+			},
+			shouldMock: shouldMock{
+				handlerFunc: true,
+			},
+			want: expected{
+				expectedHTTPStatus: http.StatusBadRequest,
+				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: NOT FOUND; error: User not found:1; field:"),
+			},
+		},
+		{
 			name: "error case - handler returned standard error",
 			args: args{
 				args: 1,
