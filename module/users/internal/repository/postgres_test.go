@@ -17,6 +17,7 @@ import (
 var (
 	testUser = &entity.User{
 		ID:             uint(1),
+		Email:          "test@email.com",
 		Username:       "testuser",
 		Premium:        true,
 		HashedPassword: "testhashespassword",
@@ -48,6 +49,7 @@ func TestPostgresRepository_GetUserByID(t *testing.T) {
 				postgresClient.On("GetFirst", blankResult, fmt.Sprintf("id='%d'", testUser.ID)).Run(func(args mock.Arguments) {
 					arg := args.Get(0).(*entity.User)
 					arg.ID = testUser.ID
+					arg.Email = testUser.Email
 					arg.Username = testUser.Username
 					arg.Premium = testUser.Premium
 					arg.HashedPassword = testUser.HashedPassword
@@ -101,6 +103,7 @@ func TestPostgresRepository_GetUserByUsername(t *testing.T) {
 				postgresClient.On("GetFirst", blankResult, fmt.Sprintf("username='%s'", testUser.Username)).Run(func(args mock.Arguments) {
 					arg := args.Get(0).(*entity.User)
 					arg.ID = testUser.ID
+					arg.Email = testUser.Email
 					arg.Username = testUser.Username
 					arg.Premium = testUser.Premium
 					arg.HashedPassword = testUser.HashedPassword
@@ -140,6 +143,7 @@ func TestPostgresRepository_GetUserByUsername(t *testing.T) {
 func TestPostgresRepository_InsertUser(t *testing.T) {
 	postgreParams := []interface{}{
 		testUser.Username,
+		testUser.Email,
 		testUser.HashedPassword,
 	}
 	tests := []struct {
@@ -185,6 +189,7 @@ func TestPostgresRepository_InsertUser(t *testing.T) {
 
 func TestPostgresRepository_UpdateUser(t *testing.T) {
 	postgreParams := []interface{}{
+		"premium",
 		testUser.Premium,
 		testUser.ID,
 	}
@@ -217,7 +222,7 @@ func TestPostgresRepository_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mockPostgresCall(postgresClient)
 			repo := repository.NewPostgresRepository(postgresClient)
-			err := repo.UpdateUser(tc.args)
+			err := repo.UpdateUser(tc.args, "premium", tc.args.Premium)
 
 			if tc.expectedError != nil {
 				assert.NotNil(t, err)

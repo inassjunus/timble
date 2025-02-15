@@ -12,7 +12,7 @@ import (
 const (
 	INSERT_USER_QUERY = `
       INSERT INTO users (
-        username, hashed_password, premium
+        username, email, hashed_password
       )
       VALUES ?
     `
@@ -20,7 +20,7 @@ const (
      UPDATE
         users
       SET
-        premium = ?
+        ? = ?
       WHERE
         id = ?
     `
@@ -71,6 +71,7 @@ func (repo *PostgresRepository) GetUserByUsername(username string) (*entity.User
 func (repo *PostgresRepository) InsertUser(user entity.User) error {
 	param := []interface{}{
 		user.Username,
+		user.Email,
 		user.HashedPassword,
 	}
 
@@ -82,9 +83,10 @@ func (repo *PostgresRepository) InsertUser(user entity.User) error {
 	return nil
 }
 
-func (repo *PostgresRepository) UpdateUser(user entity.User) error {
+func (repo *PostgresRepository) UpdateUser(user entity.User, field string, value interface{}) error {
 	param := []interface{}{
-		user.Premium,
+		field,
+		value,
 		user.ID,
 	}
 

@@ -6,34 +6,30 @@ import (
 	"strings"
 )
 
-type ErrorDetails struct {
+type StandardError struct {
 	Message string `json:"message"`
 	Code    string `json:"code,omitempty"`
 	Field   string `json:"field,omitempty"`
 }
 
-type StandardError struct {
-	details []*ErrorDetails
-}
-
 var (
 	ErrorInternalServerResponse = &StandardError{
-		details: []*ErrorDetails{
-			&ErrorDetails{
-				Message: "internal server error, please check the server logs",
-				Code:    "INTERNAL SERVER ERROR",
-			},
-		}}
+		Message: "internal server error, please check the server logs",
+		Code:    "INTERNAL SERVER ERROR",
+	}
 
-	ErrUnauthenticated = ErrorDetails{
-		Message: "Invalid or missing required autherication",
+	ErrUnauthenticated = &StandardError{
+		Message: "Invalid or missing required authentication",
 		Code:    "Unauthorized",
 	}
 )
 
-// Error implement error interface
-func (e *ErrorDetails) Error() string {
-	return e.Message
+func NewStandardError(message, code, field string) *StandardError {
+	return &StandardError{
+		Message: message,
+		Code:    code,
+		Field:   field,
+	}
 }
 
 // Error implement error interface
@@ -41,35 +37,28 @@ func (s *StandardError) Error() string {
 	buff := bytes.NewBufferString("")
 
 	buff.WriteString("Error on\n")
-	for _, err := range s.details {
-		buff.WriteString("code: ")
-		buff.WriteString(err.Code)
-		buff.WriteString("; error: ")
-		buff.WriteString(err.Error())
-		buff.WriteString("; field: ")
-		buff.WriteString("\n")
-	}
+	buff.WriteString("code: ")
+	buff.WriteString(s.Code)
+	buff.WriteString("; error: ")
+	buff.WriteString(s.Message)
+	buff.WriteString("; field: ")
+	buff.WriteString(s.Field)
+	buff.WriteString("\n")
 
 	return strings.TrimSpace(buff.String())
 }
 
 func BadRequestParamError(message, field string) *StandardError {
 	return &StandardError{
-		details: []*ErrorDetails{
-			&ErrorDetails{
-				Message: message,
-				Code:    "PARAMETER_PARSING_FAILS",
-				Field:   field,
-			},
-		}}
+		Message: message,
+		Code:    "PARAMETER_PARSING_FAILS",
+		Field:   field,
+	}
 }
 
 func UserNotFoundError(userID uint) *StandardError {
 	return &StandardError{
-		details: []*ErrorDetails{
-			&ErrorDetails{
-				Message: fmt.Sprintf("User not found:%d", userID),
-				Code:    "NOT FOUND",
-			},
-		}}
+		Message: fmt.Sprintf("User not found:%d", userID),
+		Code:    "NOT FOUND",
+	}
 }

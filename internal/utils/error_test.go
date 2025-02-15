@@ -8,32 +8,6 @@ import (
 	"timble/internal/utils"
 )
 
-func TestError_ErrorDetails_Error(t *testing.T) {
-	cases := []struct {
-		name           string
-		err            utils.ErrorDetails
-		expectedResult string
-	}{
-		{
-			name: "normal case",
-			err: utils.ErrorDetails{
-				Message: "test error message",
-				Code:    "test code",
-				Field:   "test field",
-			},
-			expectedResult: "test error message",
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			actual := tc.err.Error()
-
-			assert.Equal(t, tc.expectedResult, actual)
-		})
-	}
-}
-
 func TestError_StandardError_Error(t *testing.T) {
 	cases := []struct {
 		name           string
@@ -41,9 +15,9 @@ func TestError_StandardError_Error(t *testing.T) {
 		expectedResult string
 	}{
 		{
-			name:           "normal case",
-			err:            utils.ErrorInternalServerResponse,
-			expectedResult: "Error on\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:",
+			name:           "normal case with all the fields",
+			err:            utils.BadRequestParamError("Missing param", "a param"),
+			expectedResult: "Error on\ncode: PARAMETER_PARSING_FAILS; error: Missing param; field: a param",
 		},
 	}
 
@@ -67,7 +41,7 @@ func TestError_BadRequestParamError(t *testing.T) {
 			name:           "normal case",
 			message:        "test err message",
 			field:          "test field",
-			expectedResult: "Error on\ncode: PARAMETER_PARSING_FAILS; error: test err message; field:",
+			expectedResult: "Error on\ncode: PARAMETER_PARSING_FAILS; error: test err message; field: test field",
 		},
 	}
 

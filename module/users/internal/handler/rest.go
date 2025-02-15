@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -36,9 +35,9 @@ func (resource *UsersResource) Login(w http.ResponseWriter, r *http.Request) {
 		m.TrackRestService()
 	}()
 
-	params, err := entity.NewUserPayload(r.Body)
+	params, err := entity.NewUserLoginPayload(r.Body)
 	if err != nil {
-		m = m.SetFail(resource.returnErrorResponse(w, r, utils.BadRequestParamError(err.Error(), "user credentials")))
+		m = m.SetFail(resource.returnErrorResponse(w, r, err))
 		return
 	}
 
@@ -52,7 +51,7 @@ func (resource *UsersResource) Login(w http.ResponseWriter, r *http.Request) {
 	meta := utils.Meta{
 		HTTPStatus: http.StatusOK,
 	}
-	body := utils.NewResponseBody(result, meta)
+	body := utils.NewDataResponse(result, meta)
 	body.WriteAPIResponse(w, r, http.StatusOK)
 }
 
@@ -63,9 +62,9 @@ func (resource *UsersResource) Create(w http.ResponseWriter, r *http.Request) {
 		m.TrackRestService()
 	}()
 
-	params, err := entity.NewUserPayload(r.Body)
+	params, err := entity.NewUserRegistrationPayload(r.Body)
 	if err != nil {
-		m = m.SetFail(resource.returnErrorResponse(w, r, utils.BadRequestParamError(err.Error(), "user data")))
+		m = m.SetFail(resource.returnErrorResponse(w, r, err))
 		return
 	}
 
@@ -79,7 +78,7 @@ func (resource *UsersResource) Create(w http.ResponseWriter, r *http.Request) {
 	meta := utils.Meta{
 		HTTPStatus: http.StatusCreated,
 	}
-	body := utils.NewResponseBody(result, meta)
+	body := utils.NewDataResponse(result, meta)
 	body.WriteAPIResponse(w, r, http.StatusCreated)
 }
 
@@ -105,7 +104,7 @@ func (resource *UsersResource) Show(w http.ResponseWriter, r *http.Request) {
 	meta := utils.Meta{
 		HTTPStatus: http.StatusOK,
 	}
-	body := utils.NewResponseBody(userData, meta)
+	body := utils.NewDataResponse(userData, meta)
 	body.WriteAPIResponse(w, r, http.StatusOK)
 }
 
@@ -119,7 +118,7 @@ func (resource *UsersResource) React(w http.ResponseWriter, r *http.Request) {
 
 	params, err := entity.NewReactionPayload(r.Body, userID)
 	if err != nil {
-		m = m.SetFail(resource.returnErrorResponse(w, r, utils.BadRequestParamError(err.Error(), "user")))
+		m = m.SetFail(resource.returnErrorResponse(w, r, err))
 		return
 	}
 
@@ -133,7 +132,7 @@ func (resource *UsersResource) React(w http.ResponseWriter, r *http.Request) {
 	meta := utils.Meta{
 		HTTPStatus: http.StatusOK,
 	}
-	body := utils.NewResponseMessage("Reaction saved", meta)
+	body := utils.NewMessageResponse("Reaction saved", meta)
 	body.WriteAPIResponse(w, r, http.StatusOK)
 }
 
@@ -154,7 +153,7 @@ func (resource *UsersResource) GrantPremium(w http.ResponseWriter, r *http.Reque
 	meta := utils.Meta{
 		HTTPStatus: http.StatusOK,
 	}
-	body := utils.NewResponseMessage("Premium granted", meta)
+	body := utils.NewMessageResponse("Premium granted", meta)
 	body.WriteAPIResponse(w, r, http.StatusOK)
 }
 
@@ -175,7 +174,7 @@ func (resource *UsersResource) UnsubscribePremium(w http.ResponseWriter, r *http
 	meta := utils.Meta{
 		HTTPStatus: http.StatusOK,
 	}
-	body := utils.NewResponseMessage("Unsubscribed from premium", meta)
+	body := utils.NewMessageResponse("Unsubscribed from premium", meta)
 	body.WriteAPIResponse(w, r, http.StatusOK)
 }
 
@@ -188,18 +187,17 @@ func (resource *UsersResource) returnErrorResponse(w http.ResponseWriter, r *htt
 	if !ok {
 		httpStatus := http.StatusInternalServerError
 		resource.logger.Error(errors.WithStack(err).Error(), utils.BuildRequestLogFields(r, httpStatus)...)
-		writeErrorResponse(w, utils.ErrorInternalServerResponse, httpStatus)
+		writeErrorResponse(w, r, utils.ErrorInternalServerResponse, httpStatus)
 		return httpStatus
 	}
 
 	httpStatus := http.StatusBadRequest
-	writeErrorResponse(w, errOrig, httpStatus)
+	writeErrorResponse(w, r, errOrig, httpStatus)
 	resource.logger.Error(err.Error(), utils.BuildRequestLogFields(r, httpStatus)...)
 	return httpStatus
 }
 
-func writeErrorResponse(w http.ResponseWriter, err *utils.StandardError, statusCode int) {
-	w.WriteHeader(statusCode)
-	errByte, _ := json.Marshal(err)
-	w.Write(errByte)
+func writeErrorResponse(w http.ResponseWriter, r *http.Request, err *utils.StandardError, statusCode int) {
+	body := utils.NewErrorResponse(err, statusCode)
+	body.WriteAPIResponse(w, r, statusCode)
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type AuthUsecase interface {
-	Login(ctx context.Context, params entity.UserParams) (entity.UserToken, error)
+	Login(ctx context.Context, params entity.UserLoginParams) (entity.UserToken, error)
 }
 
 type AuthUc struct {
@@ -29,7 +29,7 @@ func NewAuthUsecase(auth *utils.AuthConfig, db PostgresRepository, logger *log.L
 	}
 }
 
-func (usecase AuthUc) Login(ctx context.Context, params entity.UserParams) (entity.UserToken, error) {
+func (usecase AuthUc) Login(ctx context.Context, params entity.UserLoginParams) (entity.UserToken, error) {
 	userToken := entity.UserToken{}
 	userData, err := usecase.db.GetUserByUsername(params.Username)
 	if err != nil {

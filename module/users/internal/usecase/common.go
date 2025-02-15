@@ -34,7 +34,7 @@ type PostgresRepository interface {
 	GetUserByID(id uint) (*entity.User, error)
 	GetUserByUsername(username string) (*entity.User, error)
 	InsertUser(user entity.User) error
-	UpdateUser(user entity.User) error
+	UpdateUser(user entity.User, field string, value interface{}) error
 	UpsertUserReaction(reaction entity.ReactionParams) error
 }
 

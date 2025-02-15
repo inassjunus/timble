@@ -2,8 +2,8 @@ package entity
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
+	"timble/internal/utils"
 	"time"
 )
 
@@ -39,11 +39,11 @@ func NewReactionPayload(body io.Reader, userID uint) (ReactionParams, error) {
 	}
 
 	if params.TargetID <= 0 || params.TargetID == userID {
-		return params, errors.New("Invalid target user")
+		return params, utils.BadRequestParamError("Invalid target user", "target_id")
 	}
 
 	if !ReactionTypes[params.Type] {
-		return params, errors.New("Invalid reaction type")
+		return params, utils.BadRequestParamError("Invalid reaction type", "type")
 	}
 	return params, nil
 }

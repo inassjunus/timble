@@ -23,12 +23,10 @@ func TestReaction_NewReactionPayload(t *testing.T) {
 	}{
 		{
 			name: "normal case",
-			body: `
-		    {
+			body: `{
 		      "target_id":  2,
 		      "type": 1
-		    }
-		  `,
+		    }`,
 			expectedResult: entity.ReactionParams{
 				UserID:   1,
 				TargetID: 2,
@@ -37,12 +35,10 @@ func TestReaction_NewReactionPayload(t *testing.T) {
 		},
 		{
 			name: "error case with invalid target ID",
-			body: `
-		    {
+			body: `{
 		      "type": 1
-		    }
-		  `,
-			expectedErr: errors.New("Invalid target user"),
+		    }`,
+			expectedErr: errors.New("Error on\ncode: PARAMETER_PARSING_FAILS; error: Invalid target user; field: target_id"),
 		},
 		{
 			name: "error case with same target ID as user ID",
@@ -52,7 +48,7 @@ func TestReaction_NewReactionPayload(t *testing.T) {
 		      "type": 1
 		    }
 		  `,
-			expectedErr: errors.New("Invalid target user"),
+			expectedErr: errors.New("Error on\ncode: PARAMETER_PARSING_FAILS; error: Invalid target user; field: target_id"),
 		},
 		{
 			name: "error case with invalid type",
@@ -62,7 +58,7 @@ func TestReaction_NewReactionPayload(t *testing.T) {
 		      "type": 3
 		    }
 		  `,
-			expectedErr: errors.New("Invalid reaction type"),
+			expectedErr: errors.New("Error on\ncode: PARAMETER_PARSING_FAILS; error: Invalid reaction type; field: type"),
 		},
 	}
 	for _, tc := range tests {

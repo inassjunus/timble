@@ -14,7 +14,7 @@ import (
 )
 
 type UserUsecase interface {
-	Create(ctx context.Context, params entity.UserParams) (entity.UserToken, error)
+	Create(ctx context.Context, params entity.UserRegistrationParams) (entity.UserToken, error)
 	Show(ctx context.Context, userID uint) (*entity.UserPublic, error)
 	React(ctx context.Context, params entity.ReactionParams) error
 }
@@ -37,11 +37,12 @@ func NewUserUsecase(auth *utils.AuthConfig, redis RedisRepository, db PostgresRe
 	}
 }
 
-func (usecase UserUc) Create(ctx context.Context, params entity.UserParams) (entity.UserToken, error) {
+func (usecase UserUc) Create(ctx context.Context, params entity.UserRegistrationParams) (entity.UserToken, error) {
 	userToken := entity.UserToken{}
 	bytes, err := bcrypt.GenerateFromPassword([]byte(params.Password), 14)
 	userData := entity.User{
 		Username:       params.Username,
+		Email:          params.Email,
 		HashedPassword: string(bytes),
 	}
 
@@ -75,6 +76,7 @@ func (usecase UserUc) Show(ctx context.Context, userID uint) (*entity.UserPublic
 	userPublicData := &entity.UserPublic{
 		ID:        userData.ID,
 		Username:  userData.Username,
+		Email:     userData.Email,
 		Premium:   userData.Premium,
 		CreatedAt: userData.CreatedAt,
 		UpdatedAt: userData.UpdatedAt,

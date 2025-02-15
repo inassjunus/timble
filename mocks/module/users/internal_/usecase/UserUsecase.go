@@ -15,7 +15,7 @@ type UserUsecase struct {
 }
 
 // Create provides a mock function with given fields: ctx, params
-func (_m *UserUsecase) Create(ctx context.Context, params entity.UserParams) (entity.UserToken, error) {
+func (_m *UserUsecase) Create(ctx context.Context, params entity.UserRegistrationParams) (entity.UserToken, error) {
 	ret := _m.Called(ctx, params)
 
 	if len(ret) == 0 {
@@ -24,16 +24,16 @@ func (_m *UserUsecase) Create(ctx context.Context, params entity.UserParams) (en
 
 	var r0 entity.UserToken
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, entity.UserParams) (entity.UserToken, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entity.UserRegistrationParams) (entity.UserToken, error)); ok {
 		return rf(ctx, params)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, entity.UserParams) entity.UserToken); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entity.UserRegistrationParams) entity.UserToken); ok {
 		r0 = rf(ctx, params)
 	} else {
 		r0 = ret.Get(0).(entity.UserToken)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, entity.UserParams) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, entity.UserRegistrationParams) error); ok {
 		r1 = rf(ctx, params)
 	} else {
 		r1 = ret.Error(1)

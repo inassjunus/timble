@@ -91,17 +91,17 @@ func (_m *PostgresRepository) InsertUser(user entity.User) error {
 	return r0
 }
 
-// UpdateUser provides a mock function with given fields: user
-func (_m *PostgresRepository) UpdateUser(user entity.User) error {
-	ret := _m.Called(user)
+// UpdateUser provides a mock function with given fields: user, field, value
+func (_m *PostgresRepository) UpdateUser(user entity.User, field string, value interface{}) error {
+	ret := _m.Called(user, field, value)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateUser")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(entity.User) error); ok {
-		r0 = rf(user)
+	if rf, ok := ret.Get(0).(func(entity.User, string, interface{}) error); ok {
+		r0 = rf(user, field, value)
 	} else {
 		r0 = ret.Error(0)
 	}

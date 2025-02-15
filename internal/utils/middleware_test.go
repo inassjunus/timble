@@ -149,19 +149,19 @@ func TestMiddleware_Authentication(t *testing.T) {
 		},
 		{
 			name:               "missing token case",
-			expectedResult:     `{"message":"Invalid or missing required autherication","code":"Unauthorized"}`,
+			expectedResult:     `{"message":"Invalid or missing required authentication","code":"Unauthorized"}`,
 			expectedHTTPStatus: 401,
 		},
 		{
 			name:               "invalid token format",
 			token:              "this is invalid header",
-			expectedResult:     `{"message":"Invalid or missing required autherication","code":"Unauthorized"}`,
+			expectedResult:     `{"message":"Invalid or missing required authentication","code":"Unauthorized"}`,
 			expectedHTTPStatus: 401,
 		},
 		{
 			name:               "invalid token case",
 			token:              "thisisinvalidtoken",
-			expectedResult:     `{"message":"Invalid or missing required autherication","code":"Unauthorized"}`,
+			expectedResult:     `{"message":"Invalid or missing required authentication","code":"Unauthorized"}`,
 			expectedHTTPStatus: 401,
 		},
 	}

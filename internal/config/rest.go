@@ -80,7 +80,7 @@ func getRESTRoutes() *chi.Mux {
 
 	// Health check function
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		body := utils.NewResponseMessage("ok", utils.Meta{
+		body := utils.NewMessageResponse("ok", utils.Meta{
 			HTTPStatus: http.StatusOK,
 		})
 		body.WriteAPIResponse(w, r, http.StatusOK)
