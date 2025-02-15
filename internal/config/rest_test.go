@@ -103,7 +103,7 @@ func Test_NewRestServer(t *testing.T) {
 				assert.Equal(t, tc.expected.expectedErr.Error(), err.Error())
 			} else {
 				assert.NotEqual(t, nil, server)
-        // test healthcheck endpoint
+				// test healthcheck endpoint
 				urlPath := "/health"
 
 				req := httptest.NewRequest(http.MethodGet, urlPath, bytes.NewBuffer(nil))

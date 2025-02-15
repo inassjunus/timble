@@ -8,15 +8,12 @@ $$ LANGUAGE plpgsql;
 
 CREATE TABLE users (
   id SERIAL NOT NULL PRIMARY KEY,
-  username VARCHAR(100) NOT NULL,
-  email VARCHAR(100) NOT NULL,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE,
   hashed_password TEXT NOT NULL,
   premium BOOLEAN NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(username),
-  UNIQUE(email),
-  INDEX `users_username`(`username`) USING BTREE
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TRIGGER set_timestamp

@@ -5,6 +5,7 @@ import (
 
 	"github.com/caarlos0/env/v6"
 
+	_ "github.com/joho/godotenv/autoload"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
