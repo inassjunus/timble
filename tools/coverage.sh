@@ -8,7 +8,7 @@ COVERAGE_DIR="${COVERAGE_DIR:-coverage}"
 mkdir -p "$COVERAGE_DIR";
 
 # Create a coverage file for each package
-go test --cover -covermode=count  -coverprofile="${COVERAGE_DIR}"/coverage.cov `go list ./... | grep -v /mocks/` ;
+go test --cover -covermode=count  -coverprofile="${COVERAGE_DIR}"/coverage.cov `go list ./... | grep -v /mocks/ | grep -v /cmd/` ;
 
 # Display the global code coverage
 go tool cover -func="${COVERAGE_DIR}"/coverage.cov ;

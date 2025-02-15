@@ -34,5 +34,4 @@ func main() {
 
 	<-sigChan
 	log.Println("Received terminate command, graceful shutdown")
-
 }
