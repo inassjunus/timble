@@ -112,7 +112,7 @@ func TestUsersResource_Login(t *testing.T) {
 		args       args
 		mocked     mocked
 		shouldMock shouldMock
-		want       expected
+		expected   expected
 	}{
 		{
 			name: "normal case - successfully retrieve token",
@@ -126,7 +126,7 @@ func TestUsersResource_Login(t *testing.T) {
 			mocked: mocked{
 				handlerResult: normalTokenResponseData,
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusOK,
 				expectedResponse:   fmt.Sprintf(normalTokenResponseString, http.StatusOK),
 			},
@@ -136,7 +136,7 @@ func TestUsersResource_Login(t *testing.T) {
 			args: args{
 				requestData: badRequestData,
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: PARAMETER_PARSING_FAILS; error: Password must be more than 10 characters; field: password"),
 			},
@@ -153,7 +153,7 @@ func TestUsersResource_Login(t *testing.T) {
 			mocked: mocked{
 				handlerError: utils.UserNotFoundError(1),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: NOT FOUND; error: User not found:1; field:"),
 			},
@@ -170,7 +170,7 @@ func TestUsersResource_Login(t *testing.T) {
 			mocked: mocked{
 				handlerError: errors.New("unexpected"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
 			},
@@ -199,8 +199,8 @@ func TestUsersResource_Login(t *testing.T) {
 			hndlr := http.HandlerFunc(st.Login)
 			hndlr.ServeHTTP(recorder, req)
 
-			assert.Equal(t, tc.want.expectedHTTPStatus, recorder.Result().StatusCode)
-			assert.JSONEq(t, tc.want.expectedResponse, recorder.Body.String())
+			assert.Equal(t, tc.expected.expectedHTTPStatus, recorder.Result().StatusCode)
+			assert.JSONEq(t, tc.expected.expectedResponse, recorder.Body.String())
 		})
 	}
 }
@@ -238,7 +238,7 @@ func TestUsersResource_Create(t *testing.T) {
 		args       args
 		mocked     mocked
 		shouldMock shouldMock
-		want       expected
+		expected   expected
 	}{
 		{
 			name: "normal case - successfully create user and retrieve token",
@@ -252,7 +252,7 @@ func TestUsersResource_Create(t *testing.T) {
 			mocked: mocked{
 				handlerResult: normalTokenResponseData,
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusCreated,
 				expectedResponse:   fmt.Sprintf(normalTokenResponseString, http.StatusCreated),
 			},
@@ -262,7 +262,7 @@ func TestUsersResource_Create(t *testing.T) {
 			args: args{
 				requestData: badRequestData,
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: PARAMETER_PARSING_FAILS; error: Email can not be blank; field: email"),
 			},
@@ -279,7 +279,7 @@ func TestUsersResource_Create(t *testing.T) {
 			mocked: mocked{
 				handlerError: utils.NewStandardError("unexpected", "DB ERROR", "server"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
 			},
@@ -296,7 +296,7 @@ func TestUsersResource_Create(t *testing.T) {
 			mocked: mocked{
 				handlerError: errors.New("unexpected"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
 			},
@@ -325,8 +325,8 @@ func TestUsersResource_Create(t *testing.T) {
 			hndlr := http.HandlerFunc(st.Create)
 			hndlr.ServeHTTP(recorder, req)
 
-			assert.Equal(t, tc.want.expectedHTTPStatus, recorder.Result().StatusCode)
-			assert.JSONEq(t, tc.want.expectedResponse, recorder.Body.String())
+			assert.Equal(t, tc.expected.expectedHTTPStatus, recorder.Result().StatusCode)
+			assert.JSONEq(t, tc.expected.expectedResponse, recorder.Body.String())
 		})
 	}
 }
@@ -370,7 +370,7 @@ func TestUsersResource_Show(t *testing.T) {
 		args       args
 		mocked     mocked
 		shouldMock shouldMock
-		want       expected
+		expected   expected
 	}{
 		{
 			name: "normal case - successfully get user",
@@ -383,7 +383,7 @@ func TestUsersResource_Show(t *testing.T) {
 			mocked: mocked{
 				handlerResult: normalUser,
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusOK,
 				expectedResponse:   normalUserResponseString,
 			},
@@ -396,7 +396,7 @@ func TestUsersResource_Show(t *testing.T) {
 			shouldMock: shouldMock{
 				handlerFunc: true,
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: NOT FOUND; error: User not found:1; field:"),
 			},
@@ -412,7 +412,7 @@ func TestUsersResource_Show(t *testing.T) {
 			mocked: mocked{
 				handlerError: utils.NewStandardError("unexpected", "DB ERROR", "server"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
 			},
@@ -428,7 +428,7 @@ func TestUsersResource_Show(t *testing.T) {
 			mocked: mocked{
 				handlerError: errors.New("unexpected"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
 			},
@@ -441,7 +441,7 @@ func TestUsersResource_Show(t *testing.T) {
 			logger := initLogger(t)
 			urlPath := "/api/protected/users"
 
-			req := httptest.NewRequest(http.MethodGet, urlPath, bytes.NewBuffer([]byte("")))
+			req := httptest.NewRequest(http.MethodGet, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
 			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", int(tc.args.args)))
 			req = req.WithContext(ctx)
@@ -457,8 +457,8 @@ func TestUsersResource_Show(t *testing.T) {
 			hndlr := http.HandlerFunc(st.Show)
 			hndlr.ServeHTTP(recorder, req)
 
-			assert.Equal(t, tc.want.expectedHTTPStatus, recorder.Result().StatusCode)
-			assert.JSONEq(t, tc.want.expectedResponse, recorder.Body.String())
+			assert.Equal(t, tc.expected.expectedHTTPStatus, recorder.Result().StatusCode)
+			assert.JSONEq(t, tc.expected.expectedResponse, recorder.Body.String())
 		})
 	}
 }
@@ -495,7 +495,7 @@ func TestUsersResource_React(t *testing.T) {
 		args       args
 		mocked     mocked
 		shouldMock shouldMock
-		want       expected
+		expected   expected
 	}{
 		{
 			name: "normal case - successfully react",
@@ -510,7 +510,7 @@ func TestUsersResource_React(t *testing.T) {
 			mocked: mocked{
 				handlerResult: "Reaction saved",
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusOK,
 				expectedResponse:   fmt.Sprintf(messageResponseBase, http.StatusOK, "Reaction saved"),
 			},
@@ -521,7 +521,7 @@ func TestUsersResource_React(t *testing.T) {
 				args:        1,
 				requestData: badRequestData,
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: PARAMETER_PARSING_FAILS; error: Invalid target user; field: target_id"),
 			},
@@ -539,7 +539,7 @@ func TestUsersResource_React(t *testing.T) {
 			mocked: mocked{
 				handlerError: utils.NewStandardError("unexpected", "DB ERROR", "server"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
 			},
@@ -557,7 +557,7 @@ func TestUsersResource_React(t *testing.T) {
 			mocked: mocked{
 				handlerError: errors.New("unexpected"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
 			},
@@ -586,8 +586,8 @@ func TestUsersResource_React(t *testing.T) {
 			hndlr := http.HandlerFunc(st.React)
 			hndlr.ServeHTTP(recorder, req)
 
-			assert.Equal(t, tc.want.expectedHTTPStatus, recorder.Result().StatusCode)
-			assert.JSONEq(t, tc.want.expectedResponse, recorder.Body.String())
+			assert.Equal(t, tc.expected.expectedHTTPStatus, recorder.Result().StatusCode)
+			assert.JSONEq(t, tc.expected.expectedResponse, recorder.Body.String())
 		})
 	}
 }
@@ -607,7 +607,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 		args       args
 		mocked     mocked
 		shouldMock shouldMock
-		want       expected
+		expected   expected
 	}{
 		{
 			name: "normal case - successfully grant premium",
@@ -620,7 +620,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 			mocked: mocked{
 				handlerResult: "Reaction saved",
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusOK,
 				expectedResponse:   fmt.Sprintf(messageResponseBase, http.StatusOK, "Premium granted"),
 			},
@@ -636,7 +636,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 			mocked: mocked{
 				handlerError: utils.NewStandardError("unexpected", "DB ERROR", "server"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
 			},
@@ -652,7 +652,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 			mocked: mocked{
 				handlerError: errors.New("unexpected"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
 			},
@@ -665,7 +665,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 			logger := initLogger(t)
 			urlPath := "/api/protected/users/premium/grant"
 
-			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer([]byte("")))
+			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
 			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", int(tc.args.args)))
 			req = req.WithContext(ctx)
@@ -681,8 +681,8 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 			hndlr := http.HandlerFunc(st.GrantPremium)
 			hndlr.ServeHTTP(recorder, req)
 
-			assert.Equal(t, tc.want.expectedHTTPStatus, recorder.Result().StatusCode)
-			assert.JSONEq(t, tc.want.expectedResponse, recorder.Body.String())
+			assert.Equal(t, tc.expected.expectedHTTPStatus, recorder.Result().StatusCode)
+			assert.JSONEq(t, tc.expected.expectedResponse, recorder.Body.String())
 		})
 	}
 }
@@ -702,7 +702,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 		args       args
 		mocked     mocked
 		shouldMock shouldMock
-		want       expected
+		expected   expected
 	}{
 		{
 			name: "normal case - successfully unsubscribed from premium",
@@ -715,7 +715,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 			mocked: mocked{
 				handlerResult: "Reaction saved",
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusOK,
 				expectedResponse:   fmt.Sprintf(messageResponseBase, http.StatusOK, "Unsubscribed from premium"),
 			},
@@ -731,7 +731,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 			mocked: mocked{
 				handlerError: utils.NewStandardError("unexpected", "DB ERROR", "server"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
 			},
@@ -747,7 +747,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 			mocked: mocked{
 				handlerError: errors.New("unexpected"),
 			},
-			want: expected{
+			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
 				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
 			},
@@ -760,7 +760,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 			logger := initLogger(t)
 			urlPath := "/api/protected/users/premium/unsubscribe"
 
-			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer([]byte("")))
+			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
 			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", int(tc.args.args)))
 			req = req.WithContext(ctx)
@@ -776,8 +776,8 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 			hndlr := http.HandlerFunc(st.UnsubscribePremium)
 			hndlr.ServeHTTP(recorder, req)
 
-			assert.Equal(t, tc.want.expectedHTTPStatus, recorder.Result().StatusCode)
-			assert.JSONEq(t, tc.want.expectedResponse, recorder.Body.String())
+			assert.Equal(t, tc.expected.expectedHTTPStatus, recorder.Result().StatusCode)
+			assert.JSONEq(t, tc.expected.expectedResponse, recorder.Body.String())
 		})
 	}
 }

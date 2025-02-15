@@ -42,11 +42,17 @@ type prometheusConfig struct {
 }
 
 type redisConfig struct {
-	Host      string `env:"REDIS_HOST"`
-	Port      string `env:"REDIS_PORT"`
-	Timeout   string `env:"REDIS_TIMEOUT"`
-	DBCache   string `env:"REDIS_DB_CACHE"`
-	DBStorage string `env:"REDIS_DB_STORAGE"`
+	Host    string `env:"REDIS_HOST"`
+	Port    string `env:"REDIS_PORT"`
+	Timeout string `env:"REDIS_TIMEOUT"`
+	DB      string `env:"REDIS_DB"`
+}
+
+type cacheConfig struct {
+	Host    string `env:"CACHE_HOST"`
+	Port    string `env:"CACHE_PORT"`
+	Timeout string `env:"CACHE_TIMEOUT"`
+	DB      string `env:"CACHE_DB"`
 }
 
 type databaseConfig struct {
@@ -84,6 +90,12 @@ func LoadRedisConfig() redisConfig {
 	return redisCfg
 }
 
+func LoadCacheConfig() cacheConfig {
+	cacheCfg := cacheConfig{}
+	env.Parse(&cacheCfg)
+	return cacheCfg
+}
+
 func LoadDatabaseConfig() databaseConfig {
 	dbConfig := databaseConfig{}
 	env.Parse(&dbConfig)
@@ -92,6 +104,7 @@ func LoadDatabaseConfig() databaseConfig {
 
 func NewServiceConnections() *ServiceConnections {
 	redisConfig := LoadRedisConfig()
+	cacheConfig := LoadCacheConfig()
 	databaseConfig := LoadDatabaseConfig()
 	authConfig := LoadAuthConfig()
 
@@ -105,19 +118,16 @@ func NewServiceConnections() *ServiceConnections {
 		TokenExp:  tokenExp,
 	}
 
-	logger, err := zap.NewProduction(zap.AddStacktrace(zapcore.FatalLevel + 1))
-	if err != nil {
-		panic(err)
-	}
+	logger, _ := zap.NewProduction(zap.AddStacktrace(zapcore.FatalLevel + 1))
 
 	// redis for data storage
-	redisClient, err := redis.NewClient(redisConfig.Host, redisConfig.Port, redisConfig.Timeout, redisConfig.DBStorage)
+	redisClient, err := redis.NewClient(redisConfig.Host, redisConfig.Port, redisConfig.Timeout, redisConfig.DB)
 	if err != nil {
 		panic(err)
 	}
 
 	// redis for cache
-	cacheClient, err := cache.NewClient(redisConfig.Host, redisConfig.Port, redisConfig.Timeout, redisConfig.DBCache)
+	cacheClient, err := cache.NewClient(cacheConfig.Host, cacheConfig.Port, cacheConfig.Timeout, cacheConfig.DB)
 	if err != nil {
 		panic(err)
 	}
