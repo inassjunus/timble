@@ -39,14 +39,14 @@ func NewUserUsecase(auth *utils.AuthConfig, redis RedisRepository, db PostgresRe
 
 func (usecase UserUc) Create(ctx context.Context, params entity.UserRegistrationParams) (entity.UserToken, error) {
 	userToken := entity.UserToken{}
-	bytes, err := bcrypt.GenerateFromPassword([]byte(params.Password), 14)
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(params.Password), 14)
 	userData := entity.User{
 		Username:       params.Username,
 		Email:          params.Email,
 		HashedPassword: string(bytes),
 	}
 
-	err = usecase.db.InsertUser(userData)
+	err := usecase.db.InsertUser(userData)
 	if err != nil {
 		return userToken, errors.WithStack(err)
 	}
@@ -56,11 +56,7 @@ func (usecase UserUc) Create(ctx context.Context, params entity.UserRegistration
 		return userToken, errors.WithStack(err)
 	}
 
-	token, err := usecase.auth.GenerateToken(savedData.ID)
-	if err != nil {
-		return userToken, errors.Wrap(err, "Error generating token")
-	}
-
+	token, _ := usecase.auth.GenerateToken(savedData.ID)
 	userToken.Token = token
 
 	return userToken, nil
