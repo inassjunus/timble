@@ -179,7 +179,7 @@ func (resource *UsersResource) UnsubscribePremium(w http.ResponseWriter, r *http
 }
 
 func (resource *UsersResource) getUserIDFromContext(r *http.Request) uint {
-	return uint(r.Context().Value("user_id").(float64))
+	return uint(r.Context().Value(utils.CtxUserIDKey).(float64))
 }
 
 func (resource *UsersResource) returnErrorResponse(w http.ResponseWriter, r *http.Request, err error) int {

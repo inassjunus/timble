@@ -1,16 +1,20 @@
-# timble
+# Timble
 
 # Description
 
 This service is take home technical test for a job application.
 
-Timble is a simple Golang microservice for amobile dating app.
+Timble is a simple Golang microservice for a mobile dating app.
 
 ## Endpoints
 
-See the endpoints served by timble in this [Postman Collection]()
+See the endpoints served by Timble in this Postman collection
+- [Timble.postman_collection.json](https://github.com/user-attachments/files/18813820/Timble.postman_collection.json)
+- [Timble Local.postman_environment.json](https://github.com/user-attachments/files/18813824/Timble.Local.postman_environment.json)
 
 ## Technical Guidelines
+
+### File structure
 
 ### Requirements
 
@@ -113,11 +117,20 @@ curl localhost:9090//health
 
 ### Contribution
 #### Linting
+##### Linting initial setup
+These steps only need to be done once.
+
 - Install [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) if you haven't
 ```shell
 go install golang.org/x/tools/cmd/goimports@latest
 goimports -l -w .
 ```
+- Install [staticcheck](https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck)
+```shell
+go install honnef.co/go/tools/cmd/staticcheck@2025.1
+```
+
+##### Linting command
 - Please always ensure the code complies with the Golang syntax & import convention by running this command before committing
 ```shell
 make pretty

@@ -64,14 +64,6 @@ var (
    	},
    	"message":"%s"
 	}`
-
-	testUser = &entity.User{
-		ID:             uint(1),
-		Email:          "test@email.com",
-		Username:       "testuser",
-		Premium:        true,
-		HashedPassword: "testhashespassword",
-	}
 )
 
 type shouldMock struct {
@@ -457,7 +449,7 @@ func TestUsersResource_Show(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodGet, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", float64(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {
@@ -586,7 +578,7 @@ func TestUsersResource_React(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer([]byte(tc.args.requestData)))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", float64(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {
@@ -681,7 +673,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", float64(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {
@@ -776,7 +768,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", float64(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {

@@ -11,7 +11,7 @@ import (
 )
 
 func BuildRequestLogFields(r *http.Request, httpStatus int) []zapcore.Field {
-	reqBody, _ := r.Context().Value("req_body").(string)
+	reqBody, _ := r.Context().Value(CtxRequestBodyKey).(string)
 	reqID, _ := r.Context().Value(middleware.RequestIDKey).(string)
 	return []zapcore.Field{
 		zap.String("request_id", reqID),

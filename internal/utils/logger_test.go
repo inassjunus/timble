@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -55,7 +54,7 @@ func TestLogger_BuildRequestLogFields(t *testing.T) {
 			req: req{
 				method: http.MethodPost,
 				url:    "/test/123?p=1",
-				body:   ioutil.NopCloser(strings.NewReader(testBody)),
+				body:   io.NopCloser(strings.NewReader(testBody)),
 				route:  "/test/{id}",
 			},
 			httpStatus: http.StatusOK,
@@ -80,8 +79,8 @@ func TestLogger_BuildRequestLogFields(t *testing.T) {
 			if req.Body != nil {
 				buf, _ := io.ReadAll(req.Body)
 				defer req.Body.Close()
-				ctx = context.WithValue(ctx, "req_body", string(buf))
-				req.Body = ioutil.NopCloser(bytes.NewBuffer(buf))
+				ctx = context.WithValue(ctx, utils.CtxRequestBodyKey, string(buf))
+				req.Body = io.NopCloser(bytes.NewBuffer(buf))
 			}
 
 			actual := utils.BuildRequestLogFields(req.WithContext(ctx), c.httpStatus)

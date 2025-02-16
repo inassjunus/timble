@@ -11,10 +11,6 @@ import (
 )
 
 func TestReaction_NewReactionPayload(t *testing.T) {
-	type args struct {
-		configName string
-		configData string
-	}
 	tests := []struct {
 		name           string
 		body           string

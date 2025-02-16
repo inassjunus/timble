@@ -5,12 +5,18 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
 	middlewarev1 "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5/middleware"
+)
+
+type CtxKey string
+
+const (
+	CtxRequestBodyKey = CtxKey("req_body")
+	CtxUserIDKey      = CtxKey("user_id")
 )
 
 func ReqBodyCtx(next http.Handler) http.Handler {
@@ -19,8 +25,8 @@ func ReqBodyCtx(next http.Handler) http.Handler {
 		if r.Body != nil {
 			buf, _ := io.ReadAll(r.Body)
 			defer r.Body.Close()
-			ctx = context.WithValue(ctx, "req_body", string(buf))
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(buf))
+			ctx = context.WithValue(ctx, CtxRequestBodyKey, string(buf))
+			r.Body = io.NopCloser(bytes.NewBuffer(buf))
 		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -61,7 +67,7 @@ func Authentication(auth *AuthConfig) func(next http.Handler) http.Handler {
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
+			ctx := context.WithValue(r.Context(), CtxUserIDKey, claims["user_id"])
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

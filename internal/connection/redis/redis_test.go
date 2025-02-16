@@ -18,9 +18,6 @@ var (
 	testKey2         = "testkey2"
 	testMember1      = "testmember1"
 	testMember2      = "testmember2"
-	testField1       = "testfield1"
-	testField2       = "testfield2"
-	testScore        = float64(100)
 	testRedisTimeout = "200ms"
 )
 
