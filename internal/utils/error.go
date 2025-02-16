@@ -3,13 +3,15 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"net/http"
 	"strings"
 )
 
 type StandardError struct {
-	Message string `json:"message"`
-	Code    string `json:"code,omitempty"`
-	Field   string `json:"field,omitempty"`
+	Message    string `json:"message"`
+	Code       string `json:"code,omitempty"`
+	Field      string `json:"field,omitempty"`
+	HttpStatus int    `json:"-"`
 }
 
 var (
@@ -19,8 +21,21 @@ var (
 	}
 
 	ErrUnauthenticated = &StandardError{
-		Message: "Invalid or missing required authentication",
-		Code:    "Unauthorized",
+		Message:    "Invalid or missing required authentication",
+		Code:       "Unauthorized",
+		HttpStatus: 401,
+	}
+
+	ErrInvalidLogin = &StandardError{
+		Message:    "Invalid username or password",
+		Code:       "Unauthorized",
+		HttpStatus: http.StatusUnauthorized,
+	}
+
+	ErrDuplicateUser = &StandardError{
+		Message:    "Username or email already exists",
+		Code:       "DUPLICATE_USER",
+		HttpStatus: http.StatusBadRequest,
 	}
 )
 
@@ -50,9 +65,10 @@ func (s *StandardError) Error() string {
 
 func BadRequestParamError(message, field string) *StandardError {
 	return &StandardError{
-		Message: message,
-		Code:    "PARAMETER_PARSING_FAILS",
-		Field:   field,
+		Message:    message,
+		Code:       "PARAMETER_PARSING_FAILS",
+		Field:      field,
+		HttpStatus: http.StatusBadRequest,
 	}
 }
 

@@ -84,7 +84,7 @@ func TestAuthUc_Login(t *testing.T) {
 			mocked: mocked{
 				dbResult: nil,
 			},
-			expectedErr: errors.New("Invalid username or password"),
+			expectedErr: errors.New("Error on\ncode: Unauthorized; error: Invalid username or password; field:"),
 		},
 		{
 			name: "error case - wrong password",
@@ -104,7 +104,7 @@ func TestAuthUc_Login(t *testing.T) {
 					HashedPassword: "$2a$14$yWjcGVzgVVBZHQV377NA2.R9.Uf7NPoBoHMsBaPboh552vuxhQV06",
 				},
 			},
-			expectedErr: errors.New("Invalid username or password"),
+			expectedErr: errors.New("Error on\ncode: Unauthorized; error: Invalid username or password; field:"),
 		},
 		{
 			name: "error case - error from db",

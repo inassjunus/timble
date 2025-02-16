@@ -63,7 +63,7 @@ func NewUserRegistrationPayload(body io.Reader) (UserRegistrationParams, error) 
 		return params, utils.BadRequestParamError("Invalid email format", "email")
 	}
 
-	if len(params.Password) <= 10 {
+	if len(params.Password) < 10 {
 		return params, utils.BadRequestParamError("Password must be more than 10 characters", "password")
 	}
 	return params, nil
@@ -79,7 +79,7 @@ func NewUserLoginPayload(body io.Reader) (UserLoginParams, error) {
 		return params, utils.BadRequestParamError("Username can not be blank", "username")
 	}
 
-	if len(params.Password) <= 10 {
+	if len(params.Password) < 10 {
 		return params, utils.BadRequestParamError("Password must be more than 10 characters", "password")
 	}
 	return params, nil

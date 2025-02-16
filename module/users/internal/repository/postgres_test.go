@@ -144,6 +144,7 @@ func TestPostgresRepository_InsertUser(t *testing.T) {
 	postgreParams := []interface{}{
 		testUser.Username,
 		testUser.Email,
+		testUser.Premium,
 		testUser.HashedPassword,
 	}
 	tests := []struct {

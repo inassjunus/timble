@@ -12,7 +12,7 @@ import (
 const (
 	INSERT_USER_QUERY = `
       INSERT INTO users (
-        username, email, hashed_password
+        username, email, premium, hashed_password
       )
       VALUES ?
     `
@@ -72,6 +72,7 @@ func (repo *PostgresRepository) InsertUser(user entity.User) error {
 	param := []interface{}{
 		user.Username,
 		user.Email,
+		user.Premium,
 		user.HashedPassword,
 	}
 

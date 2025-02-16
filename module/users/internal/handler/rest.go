@@ -179,7 +179,7 @@ func (resource *UsersResource) UnsubscribePremium(w http.ResponseWriter, r *http
 }
 
 func (resource *UsersResource) getUserIDFromContext(r *http.Request) uint {
-	return uint(r.Context().Value("user_id").(int))
+	return uint(r.Context().Value("user_id").(float64))
 }
 
 func (resource *UsersResource) returnErrorResponse(w http.ResponseWriter, r *http.Request, err error) int {
@@ -192,6 +192,9 @@ func (resource *UsersResource) returnErrorResponse(w http.ResponseWriter, r *htt
 	}
 
 	httpStatus := http.StatusBadRequest
+	if errOrig.HttpStatus != 0 {
+		httpStatus = errOrig.HttpStatus
+	}
 	writeErrorResponse(w, r, errOrig, httpStatus)
 	resource.logger.Error(err.Error(), utils.BuildRequestLogFields(r, httpStatus)...)
 	return httpStatus

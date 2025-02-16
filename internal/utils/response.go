@@ -6,10 +6,11 @@ import (
 )
 
 type Response struct {
-	Meta    Meta   `json:"meta"`
-	Data    any    `json:"data,omitempty"`
-	Error   string `json:"error,omitempty"`
-	Message string `json:"message,omitempty"`
+	Meta        Meta           `json:"meta"`
+	Data        any            `json:"data,omitempty"`
+	Error       string         `json:"error,omitempty"`
+	ErrorDetail *StandardError `json:"error_detail,omitempty"`
+	Message     string         `json:"message,omitempty"`
 }
 
 type Meta struct {
@@ -31,12 +32,18 @@ func NewMessageResponse(message string, meta Meta) *Response {
 }
 
 func NewErrorResponse(err error, httpStatus int) *Response {
-	return &Response{
+	result := &Response{
 		Error: err.Error(),
 		Meta: Meta{
 			HTTPStatus: httpStatus,
 		},
 	}
+	errStd, ok := err.(*StandardError)
+	if ok {
+		result.Error = ""
+		result.ErrorDetail = errStd
+	}
+	return result
 }
 
 func (b *Response) WriteAPIResponse(w http.ResponseWriter, r *http.Request, httpStatus int) {
