@@ -47,7 +47,7 @@ compile_osx: ## Run build go for mac
 pretty:
 	gofmt -w .
 	goimports -w .
-	go list ${PKG}/... | grep -v /vendor/ | grep -v /mocks/| xargs staticcheck
+	go list ${PKG}/... | grep -v /vendor/ | grep -v /mocks/ | xargs staticcheck
 
 run-rest:
 	go run cmd/rest/main.go
