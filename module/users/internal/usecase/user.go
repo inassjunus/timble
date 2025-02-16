@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -91,6 +92,7 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 		if err != nil {
 			return errors.WithStack(err)
 		}
+		usecase.cache.Set(ctx, BuildPremiumCacheKey(params.UserID), []byte(fmt.Sprintf("%t", userData.Premium)), premiumExpCache)
 		isPremium = userData.Premium
 	}
 

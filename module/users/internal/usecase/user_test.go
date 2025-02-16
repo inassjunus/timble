@@ -247,6 +247,7 @@ func TestUserUc_React(t *testing.T) {
 
 	type shouldMock struct {
 		dbGetUserByID        bool
+		cacheSetPremium      bool
 		redisGetLimit        bool
 		dbGetUserByIDTarget  bool
 		dbUpsertUserReaction bool
@@ -258,6 +259,7 @@ func TestUserUc_React(t *testing.T) {
 		cacheGetPremiumError      error
 		dbGetUserByIDResult       *entity.User
 		dbGetUserByIDError        error
+		cacheSetPremiumParam      string
 		redisGetLimitResult       string
 		dbGetUserByIDTargetResult *entity.User
 		dbGetUserByIDTargetError  error
@@ -295,6 +297,7 @@ func TestUserUc_React(t *testing.T) {
 			},
 			shouldMock: shouldMock{
 				dbGetUserByID:        true,
+				cacheSetPremium:      true,
 				redisGetLimit:        true,
 				dbGetUserByIDTarget:  true,
 				dbUpsertUserReaction: true,
@@ -302,6 +305,7 @@ func TestUserUc_React(t *testing.T) {
 			},
 			mocked: mocked{
 				dbGetUserByIDResult:       testUser,
+				cacheSetPremiumParam:      "false",
 				redisGetLimitResult:       "1",
 				dbGetUserByIDTargetResult: testUserPremium,
 			},
@@ -327,10 +331,12 @@ func TestUserUc_React(t *testing.T) {
 			},
 			shouldMock: shouldMock{
 				dbGetUserByID:        true,
+				cacheSetPremium:      true,
 				dbGetUserByIDTarget:  true,
 				dbUpsertUserReaction: true,
 			},
 			mocked: mocked{
+				cacheSetPremiumParam:      "true",
 				dbGetUserByIDResult:       testUserPremium,
 				dbGetUserByIDTargetResult: testUser,
 			},
@@ -419,6 +425,10 @@ func TestUserUc_React(t *testing.T) {
 
 			if tc.shouldMock.dbGetUserByID {
 				db.On("GetUserByID", tc.args.params.UserID).Return(tc.mocked.dbGetUserByIDResult, tc.mocked.dbGetUserByIDError)
+			}
+
+			if tc.shouldMock.cacheSetPremium {
+				cache.On("Set", ctx, "premium:1", []byte(tc.mocked.cacheSetPremiumParam), 24*time.Hour).Return(nil)
 			}
 
 			if tc.shouldMock.redisGetLimit {
