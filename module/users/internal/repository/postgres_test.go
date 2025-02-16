@@ -144,6 +144,7 @@ func TestPostgresRepository_InsertUser(t *testing.T) {
 	postgreParams := []interface{}{
 		testUser.Username,
 		testUser.Email,
+		testUser.Premium,
 		testUser.HashedPassword,
 	}
 	tests := []struct {
@@ -158,6 +159,14 @@ func TestPostgresRepository_InsertUser(t *testing.T) {
 			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
 				postgresClient.On("Exec", repository.INSERT_USER_QUERY, postgreParams).Return(nil)
 			},
+		},
+		{
+			name: "error case - duplicate user",
+			args: *testUser,
+			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
+				postgresClient.On("Exec", repository.INSERT_USER_QUERY, postgreParams).Return(errors.New("ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)"))
+			},
+			expectedError: errors.New("Error on\ncode: DUPLICATE_USER; error: Username or email already exists; field: email"),
 		},
 		{
 			name: "error case - unexpected error during insert",
@@ -187,12 +196,7 @@ func TestPostgresRepository_InsertUser(t *testing.T) {
 	}
 }
 
-func TestPostgresRepository_UpdateUser(t *testing.T) {
-	postgreParams := []interface{}{
-		"premium",
-		testUser.Premium,
-		testUser.ID,
-	}
+func TestPostgresRepository_UpdateUserPremium(t *testing.T) {
 	tests := []struct {
 		name             string
 		args             entity.User
@@ -203,16 +207,16 @@ func TestPostgresRepository_UpdateUser(t *testing.T) {
 			name: "normal case - successfully update user",
 			args: *testUser,
 			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
-				postgresClient.On("Exec", repository.UPDATE_USER_QUERY, postgreParams).Return(nil)
+				postgresClient.On("Exec", repository.UPDATE_USER_PREMIUM_QUERY, testUser.Premium, testUser.ID).Return(nil)
 			},
 		},
 		{
 			name: "error case - unexpected error during update",
 			args: *testUser,
 			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
-				postgresClient.On("Exec", repository.UPDATE_USER_QUERY, postgreParams).Return(errors.New("timeout"))
+				postgresClient.On("Exec", repository.UPDATE_USER_PREMIUM_QUERY, testUser.Premium, testUser.ID).Return(errors.New("timeout"))
 			},
-			expectedError: errors.New("postgres client error when update to users: timeout"),
+			expectedError: errors.New("postgres client error when update premium to users: timeout"),
 		},
 	}
 
@@ -222,7 +226,7 @@ func TestPostgresRepository_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mockPostgresCall(postgresClient)
 			repo := repository.NewPostgresRepository(postgresClient)
-			err := repo.UpdateUser(tc.args, "premium", tc.args.Premium)
+			err := repo.UpdateUserPremium(tc.args, tc.args.Premium)
 
 			if tc.expectedError != nil {
 				assert.NotNil(t, err)
@@ -244,7 +248,6 @@ func TestPostgresRepository_UpsertUserReaction(t *testing.T) {
 		reaction.UserID,
 		reaction.TargetID,
 		reaction.Type,
-		reaction.Type,
 	}
 	tests := []struct {
 		name             string
@@ -256,14 +259,14 @@ func TestPostgresRepository_UpsertUserReaction(t *testing.T) {
 			name: "normal case - successfully upsert user reaction",
 			args: reaction,
 			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
-				postgresClient.On("Exec", repository.UPSERT_USER_REACTION, postgreParams).Return(nil)
+				postgresClient.On("Exec", repository.UPSERT_USER_REACTION, postgreParams, reaction.Type).Return(nil)
 			},
 		},
 		{
 			name: "error case - unexpected error during upsert",
 			args: reaction,
 			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
-				postgresClient.On("Exec", repository.UPSERT_USER_REACTION, postgreParams).Return(errors.New("timeout"))
+				postgresClient.On("Exec", repository.UPSERT_USER_REACTION, postgreParams, reaction.Type).Return(errors.New("timeout"))
 			},
 			expectedError: errors.New("postgres client error when upsert to user_reactions: timeout"),
 		},

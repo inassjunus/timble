@@ -37,11 +37,25 @@ var (
       }
    }`
 
-	errorResponseBase = `{
+	stdErrorResponseBase = `{
    	"meta":{
       	"http_status":%d
    	},
-   	"error":"%s"
+   	"error_detail": {
+   		"message": "%s",
+   		"code": "%s",
+   		"field": "%s"
+   	}
+	}`
+
+	stdErrorResponseWithoutField = `{
+   	"meta":{
+      	"http_status":%d
+   	},
+   	"error_detail": {
+   		"message": "%s",
+   		"code": "%s"
+   	}
 	}`
 
 	messageResponseBase = `{
@@ -50,14 +64,6 @@ var (
    	},
    	"message":"%s"
 	}`
-
-	testUser = &entity.User{
-		ID:             uint(1),
-		Email:          "test@email.com",
-		Username:       "testuser",
-		Premium:        true,
-		HashedPassword: "testhashespassword",
-	}
 )
 
 type shouldMock struct {
@@ -138,7 +144,7 @@ func TestUsersResource_Login(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: PARAMETER_PARSING_FAILS; error: Password must be more than 10 characters; field: password"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "Password must be more than 10 characters", "PARAMETER_PARSING_FAILS", "password"),
 			},
 		},
 		{
@@ -151,11 +157,11 @@ func TestUsersResource_Login(t *testing.T) {
 				handlerFunc: true,
 			},
 			mocked: mocked{
-				handlerError: utils.UserNotFoundError(1),
+				handlerError: utils.ErrorInvalidLogin,
 			},
 			expected: expected{
-				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: NOT FOUND; error: User not found:1; field:"),
+				expectedHTTPStatus: http.StatusUnauthorized,
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusUnauthorized, "Invalid username or password", "Unauthorized"),
 			},
 		},
 		{
@@ -172,7 +178,7 @@ func TestUsersResource_Login(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusInternalServerError, "internal server error, please check the server logs", "INTERNAL SERVER ERROR"),
 			},
 		},
 	}
@@ -264,7 +270,7 @@ func TestUsersResource_Create(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: PARAMETER_PARSING_FAILS; error: Email can not be blank; field: email"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "Email can not be blank", "PARAMETER_PARSING_FAILS", "email"),
 			},
 		},
 		{
@@ -281,7 +287,7 @@ func TestUsersResource_Create(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "unexpected", "DB ERROR", "server"),
 			},
 		},
 		{
@@ -298,7 +304,7 @@ func TestUsersResource_Create(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusInternalServerError, "internal server error, please check the server logs", "INTERNAL SERVER ERROR"),
 			},
 		},
 	}
@@ -398,7 +404,7 @@ func TestUsersResource_Show(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: NOT FOUND; error: User not found:1; field:"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusBadRequest, "User not found:1", "NOT FOUND"),
 			},
 		},
 		{
@@ -414,7 +420,7 @@ func TestUsersResource_Show(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "unexpected", "DB ERROR", "server"),
 			},
 		},
 		{
@@ -430,7 +436,7 @@ func TestUsersResource_Show(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusInternalServerError, "internal server error, please check the server logs", "INTERNAL SERVER ERROR"),
 			},
 		},
 	}
@@ -443,7 +449,7 @@ func TestUsersResource_Show(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodGet, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", int(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {
@@ -523,7 +529,7 @@ func TestUsersResource_React(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: PARAMETER_PARSING_FAILS; error: Invalid target user; field: target_id"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "Invalid target user", "PARAMETER_PARSING_FAILS", "target_id"),
 			},
 		},
 		{
@@ -541,7 +547,7 @@ func TestUsersResource_React(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "unexpected", "DB ERROR", "server"),
 			},
 		},
 		{
@@ -559,7 +565,7 @@ func TestUsersResource_React(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusInternalServerError, "internal server error, please check the server logs", "INTERNAL SERVER ERROR"),
 			},
 		},
 	}
@@ -572,7 +578,7 @@ func TestUsersResource_React(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer([]byte(tc.args.requestData)))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", int(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {
@@ -638,7 +644,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "unexpected", "DB ERROR", "server"),
 			},
 		},
 		{
@@ -654,7 +660,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusInternalServerError, "internal server error, please check the server logs", "INTERNAL SERVER ERROR"),
 			},
 		},
 	}
@@ -667,7 +673,7 @@ func TestUsersResource_GrantPremium(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", int(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {
@@ -733,7 +739,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusBadRequest,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusBadRequest, "Error on\\ncode: DB ERROR; error: unexpected; field: server"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseBase, http.StatusBadRequest, "unexpected", "DB ERROR", "server"),
 			},
 		},
 		{
@@ -749,7 +755,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusInternalServerError,
-				expectedResponse:   fmt.Sprintf(errorResponseBase, http.StatusInternalServerError, "Error on\\ncode: INTERNAL SERVER ERROR; error: internal server error, please check the server logs; field:"),
+				expectedResponse:   fmt.Sprintf(stdErrorResponseWithoutField, http.StatusInternalServerError, "internal server error, please check the server logs", "INTERNAL SERVER ERROR"),
 			},
 		},
 	}
@@ -762,7 +768,7 @@ func TestUsersResource_UnsubscribePremium(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPatch, urlPath, bytes.NewBuffer(nil))
 			recorder := httptest.NewRecorder()
-			ctx := initRoutingContext(context.WithValue(req.Context(), "user_id", int(tc.args.args)))
+			ctx := initRoutingContext(context.WithValue(req.Context(), utils.CtxUserIDKey, float64(tc.args.args)))
 			req = req.WithContext(ctx)
 
 			if tc.shouldMock.handlerFunc {

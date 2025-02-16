@@ -3,13 +3,15 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"net/http"
 	"strings"
 )
 
 type StandardError struct {
-	Message string `json:"message"`
-	Code    string `json:"code,omitempty"`
-	Field   string `json:"field,omitempty"`
+	Message    string `json:"message"`
+	Code       string `json:"code,omitempty"`
+	Field      string `json:"field,omitempty"`
+	HttpStatus int    `json:"-"`
 }
 
 var (
@@ -18,9 +20,16 @@ var (
 		Code:    "INTERNAL SERVER ERROR",
 	}
 
-	ErrUnauthenticated = &StandardError{
-		Message: "Invalid or missing required authentication",
-		Code:    "Unauthorized",
+	ErrorUnauthenticated = &StandardError{
+		Message:    "Invalid or missing required authentication",
+		Code:       "Unauthorized",
+		HttpStatus: 401,
+	}
+
+	ErrorInvalidLogin = &StandardError{
+		Message:    "Invalid username or password",
+		Code:       "Unauthorized",
+		HttpStatus: http.StatusUnauthorized,
 	}
 )
 
@@ -50,9 +59,10 @@ func (s *StandardError) Error() string {
 
 func BadRequestParamError(message, field string) *StandardError {
 	return &StandardError{
-		Message: message,
-		Code:    "PARAMETER_PARSING_FAILS",
-		Field:   field,
+		Message:    message,
+		Code:       "PARAMETER_PARSING_FAILS",
+		Field:      field,
+		HttpStatus: http.StatusBadRequest,
 	}
 }
 
@@ -60,5 +70,14 @@ func UserNotFoundError(userID uint) *StandardError {
 	return &StandardError{
 		Message: fmt.Sprintf("User not found:%d", userID),
 		Code:    "NOT FOUND",
+	}
+}
+
+func DuplicateUserError(field string) *StandardError {
+	return &StandardError{
+		Message:    "Username or email already exists",
+		Code:       "DUPLICATE_USER",
+		Field:      field,
+		HttpStatus: http.StatusBadRequest,
 	}
 }

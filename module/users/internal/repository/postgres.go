@@ -6,21 +6,22 @@ import (
 	"github.com/pkg/errors"
 
 	"timble/internal/connection/postgres"
+	"timble/internal/utils"
 	"timble/module/users/entity"
 )
 
 const (
 	INSERT_USER_QUERY = `
       INSERT INTO users (
-        username, email, hashed_password
+        username, email, premium, hashed_password
       )
       VALUES ?
     `
-	UPDATE_USER_QUERY = `
+	UPDATE_USER_PREMIUM_QUERY = `
      UPDATE
         users
       SET
-        ? = ?
+        premium = ?
       WHERE
         id = ?
     `
@@ -34,6 +35,13 @@ const (
       DO UPDATE SET
         type = ?
     `
+)
+
+var (
+	duplicateKeyErrors = map[string]string{
+		"ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)":    "email",
+		"ERROR: duplicate key value violates unique constraint \"users_username_key\" (SQLSTATE 23505)": "username",
+	}
 )
 
 type PostgresRepository struct {
@@ -72,27 +80,22 @@ func (repo *PostgresRepository) InsertUser(user entity.User) error {
 	param := []interface{}{
 		user.Username,
 		user.Email,
+		user.Premium,
 		user.HashedPassword,
 	}
 
 	err := repo.PostgresClient.Exec(INSERT_USER_QUERY, param)
 	if err != nil {
-		return errors.Wrap(err, "postgres client error when insert to users")
+		return repo.wrapInsertError(err)
 	}
 
 	return nil
 }
 
-func (repo *PostgresRepository) UpdateUser(user entity.User, field string, value interface{}) error {
-	param := []interface{}{
-		field,
-		value,
-		user.ID,
-	}
-
-	err := repo.PostgresClient.Exec(UPDATE_USER_QUERY, param)
+func (repo *PostgresRepository) UpdateUserPremium(user entity.User, value interface{}) error {
+	err := repo.PostgresClient.Exec(UPDATE_USER_PREMIUM_QUERY, value, user.ID)
 	if err != nil {
-		return errors.Wrap(err, "postgres client error when update to users")
+		return errors.Wrap(err, "postgres client error when update premium to users")
 	}
 
 	return nil
@@ -103,13 +106,21 @@ func (repo *PostgresRepository) UpsertUserReaction(reaction entity.ReactionParam
 		reaction.UserID,
 		reaction.TargetID,
 		reaction.Type,
-		reaction.Type,
 	}
 
-	err := repo.PostgresClient.Exec(UPSERT_USER_REACTION, param)
+	err := repo.PostgresClient.Exec(UPSERT_USER_REACTION, param, reaction.Type)
 	if err != nil {
 		return errors.Wrap(err, "postgres client error when upsert to user_reactions")
 	}
 
 	return nil
+}
+
+func (repo *PostgresRepository) wrapInsertError(err error) error {
+	field, ok := duplicateKeyErrors[err.Error()]
+	if ok {
+		return utils.DuplicateUserError(field)
+	}
+
+	return errors.WithStack(errors.Wrap(err, "postgres client error when insert to users"))
 }

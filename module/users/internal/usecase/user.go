@@ -47,7 +47,7 @@ func (usecase UserUc) Create(ctx context.Context, params entity.UserRegistration
 
 	err := usecase.db.InsertUser(userData)
 	if err != nil {
-		return userToken, errors.WithStack(err)
+		return userToken, err
 	}
 
 	savedData, err := usecase.db.GetUserByUsername(params.Username)
@@ -98,7 +98,7 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 		limitStr, _ := usecase.redis.Get(ctx, BuildReactionLimitCacheKey(params.UserID))
 		limit, _ := strconv.Atoi(limitStr)
 		if limit >= REACTION_LIMIT {
-			return errors.New("Reaction limit exceeded")
+			return utils.NewStandardError("Reaction limit exceeded, try again tommorow", "LIMIT_EXCEEDED", "")
 		}
 	}
 
@@ -107,8 +107,8 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 		return errors.WithStack(err)
 	}
 
-	if targetUserData == nil {
-		return errors.New("Target user not found")
+	if targetUserData == nil || targetUserData.ID == 0 {
+		return utils.UserNotFoundError(params.TargetID)
 	}
 
 	err = usecase.db.UpsertUserReaction(params)

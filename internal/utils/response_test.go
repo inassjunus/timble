@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"timble/internal/utils"
@@ -72,19 +73,28 @@ func TestResponse_NewErrorResponse(t *testing.T) {
 		expected   *utils.Response
 	}{
 		{
-			name:       "normal case",
-			err:        utils.ErrUnauthenticated,
-			httpStatus: 401,
+			name:       "normal case with default error",
+			err:        errors.New("Unexpected error"),
+			httpStatus: http.StatusUnauthorized,
 			expected: &utils.Response{
-				Error: "Error on\ncode: Unauthorized; error: Invalid or missing required authentication; field:",
-				Meta:  utils.Meta{HTTPStatus: 401},
+				Error: "Unexpected error",
+				Meta:  utils.Meta{HTTPStatus: http.StatusUnauthorized},
+			},
+		},
+		{
+			name:       "normal case with standard error",
+			err:        utils.ErrorUnauthenticated,
+			httpStatus: http.StatusUnauthorized,
+			expected: &utils.Response{
+				ErrorDetail: utils.ErrorUnauthenticated,
+				Meta:        utils.Meta{HTTPStatus: http.StatusUnauthorized},
 			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := utils.NewErrorResponse(tc.err, 401)
+			actual := utils.NewErrorResponse(tc.err, http.StatusUnauthorized)
 
 			assert.Equal(t, tc.expected, actual)
 		})

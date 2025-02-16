@@ -3,7 +3,6 @@ package utils_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -73,7 +72,7 @@ func TestMiddleware_ReqBodyCtx(t *testing.T) {
 			buf, _ := io.ReadAll(r.Body)
 			defer r.Body.Close()
 			reqBody = string(buf)
-			reqBodyFromCtx, _ = r.Context().Value("req_body").(string)
+			reqBodyFromCtx, _ = r.Context().Value(utils.CtxRequestBodyKey).(string)
 		}
 		w.WriteHeader(200)
 		w.Write([]byte(fmt.Sprintf("req body from ctx: %s, req body from request: %s", reqBodyFromCtx, reqBody)))
@@ -98,7 +97,7 @@ func TestMiddleware_ReqBodyCtx(t *testing.T) {
 			name:     "normal case when request body is given",
 			url:      "/test/post",
 			method:   http.MethodPost,
-			reqBody:  ioutil.NopCloser(strings.NewReader(testBody)),
+			reqBody:  io.NopCloser(strings.NewReader(testBody)),
 			expected: "req body from ctx: {\n    \"user_ids\": [1, 2, 3],\n    \"enabled\": true\n  }, req body from request: {\n    \"user_ids\": [1, 2, 3],\n    \"enabled\": true\n  }",
 		},
 		{
@@ -208,7 +207,7 @@ func testCallRequest(t *testing.T, ts *httptest.Server, req *http.Request) (*htt
 		return nil, ""
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 		return nil, ""

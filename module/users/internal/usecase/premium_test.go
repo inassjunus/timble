@@ -74,7 +74,7 @@ func TestPremiumUc_Grant(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			db.On("UpdateUser", tc.args.dbParams, uc.PREMIUM_COLUMN, interface{}(tc.args.dbParams.Premium)).Return(tc.mocked.dbError)
+			db.On("UpdateUserPremium", tc.args.dbParams, interface{}(tc.args.dbParams.Premium)).Return(tc.mocked.dbError)
 			if tc.expectedErr == nil {
 				cache.On("Set", ctx, "premium:1", []byte("true"), 24*time.Hour).Return(nil)
 			}
@@ -138,7 +138,7 @@ func TestPremiumUc_Unsubscribe(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			db.On("UpdateUser", tc.args.dbParams, uc.PREMIUM_COLUMN, interface{}(tc.args.dbParams.Premium)).Return(tc.mocked.dbError)
+			db.On("UpdateUserPremium", tc.args.dbParams, interface{}(tc.args.dbParams.Premium)).Return(tc.mocked.dbError)
 			if tc.expectedErr == nil {
 				cache.On("Set", ctx, "premium:1", []byte("false"), 24*time.Hour).Return(nil)
 			}

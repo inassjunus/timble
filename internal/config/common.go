@@ -29,10 +29,6 @@ type authConfig struct {
 	TokenExpiration string `env:"TOKEN_EXPIRATION"`
 }
 
-type serviceConfig struct {
-	ENV string `env:"ENV"`
-}
-
 type restServerConfig struct {
 	ServerHost string `env:"SERVER_HOST"`
 	ServerPort int    `env:"SERVER_PORT"`
@@ -140,7 +136,7 @@ func NewServiceConnections() *ServiceConnections {
 		GormGetDBFunc:    postgres.GetSQLDB,
 	}
 
-	wrappedPostgresClient, err := postgres.NewClient(
+	wrappedPostgresClient, _ := postgres.NewClient(
 		postgresClient,
 		databaseConfig.Host,
 		databaseConfig.Port,

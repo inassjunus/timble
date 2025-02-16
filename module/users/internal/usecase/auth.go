@@ -36,13 +36,13 @@ func (usecase AuthUc) Login(ctx context.Context, params entity.UserLoginParams) 
 		return userToken, errors.WithStack(err)
 	}
 
-	if userData == nil {
-		return userToken, errors.New("Invalid username or password")
+	if userData == nil || userData.ID == 0 {
+		return userToken, utils.ErrorInvalidLogin
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userData.HashedPassword), []byte(params.Password))
 	if err != nil {
-		return userToken, errors.New("Invalid username or password")
+		return userToken, utils.ErrorInvalidLogin
 	}
 
 	token, _ := usecase.auth.GenerateToken(userData.ID)

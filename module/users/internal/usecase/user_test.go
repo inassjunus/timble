@@ -360,7 +360,7 @@ func TestUserUc_React(t *testing.T) {
 				cacheGetPremiumResult: []byte("false"),
 				redisGetLimitResult:   "10",
 			},
-			expectedErr: errors.New("Reaction limit exceeded"),
+			expectedErr: errors.New("Error on\ncode: LIMIT_EXCEEDED; error: Reaction limit exceeded, try again tommorow; field:"),
 		},
 		{
 			name: "error case - error when retrieving target user",
@@ -389,7 +389,7 @@ func TestUserUc_React(t *testing.T) {
 				cacheGetPremiumResult: []byte("true"),
 				redisGetLimitResult:   "1",
 			},
-			expectedErr: errors.New("Target user not found"),
+			expectedErr: errors.New("Error on\ncode: NOT FOUND; error: User not found:2; field:"),
 		},
 		{
 			name: "error case - failed to save reaction data",
