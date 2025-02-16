@@ -14,6 +14,34 @@ type RedisRepository struct {
 	mock.Mock
 }
 
+// Del provides a mock function with given fields: ctx, key
+func (_m *RedisRepository) Del(ctx context.Context, key string) (int64, error) {
+	ret := _m.Called(ctx, key)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Del")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, key)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, key)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, key)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: ctx, key
 func (_m *RedisRepository) Get(ctx context.Context, key string) (string, error) {
 	ret := _m.Called(ctx, key)

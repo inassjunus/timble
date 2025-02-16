@@ -95,7 +95,7 @@ func TestPremiumUc_Grant(t *testing.T) {
 
 			if tc.expectedErr == nil {
 				cache.On("Set", ctx, "premium:1", []byte("true"), 24*time.Hour).Return(nil)
-				redis.On("Set", ctx, "eligible_for_premium:1", "false", 0*time.Minute).Return("", nil)
+				redis.On("Del", ctx, "eligible_for_premium:1").Return(int64(1), nil)
 			}
 
 			usecase := uc.NewPremiumUsecase(redis, db, cache, &log.Logger{})

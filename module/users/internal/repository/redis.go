@@ -47,3 +47,12 @@ func (repo *RedisRepository) Get(ctx context.Context, key string) (string, error
 
 	return res, nil
 }
+
+func (repo *RedisRepository) Del(ctx context.Context, key string) (int64, error) {
+	res, err := repo.redisClient.Del(ctx, key)
+	if err != nil {
+		return res, errors.Wrap(err, "redis client error when del")
+	}
+
+	return res, nil
+}

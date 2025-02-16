@@ -304,3 +304,56 @@ func TestRedisClient_Get(t *testing.T) {
 		})
 	}
 }
+
+func TestRedisClient_Del(t *testing.T) {
+	tests := []struct {
+		name           string
+		key            string
+		mockErr        string
+		expectedResult int64
+		expectedData   string
+		expectedErr    error
+	}{
+		{
+			name:           "normal case deleting an existing key",
+			key:            testKey1,
+			expectedResult: int64(1),
+			expectedData:   "",
+		},
+		{
+			name:           "normal case deleting a non existing key",
+			key:            testKey2,
+			expectedResult: int64(0),
+			expectedData:   "",
+		},
+		{
+			name:           "error case",
+			key:            testKey1,
+			expectedResult: int64(0),
+			expectedErr:    errors.New("timeout"),
+			mockErr:        "timeout",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := miniredis.RunT(t)
+			// insert some redis test values
+			s.Set(testKey1, testMember1)
+
+			client, _ := redis.NewClient(s.Host(), s.Port(), testRedisTimeout, "0")
+			s.SetError(tc.mockErr)
+
+			result, err := client.Del(context.Background(), tc.key)
+			if tc.expectedErr != nil {
+				assert.NotEqual(t, err, nil)
+				assert.Equal(t, tc.expectedErr.Error(), err.Error())
+			} else {
+				assert.Equal(t, nil, err)
+				assert.Equal(t, tc.expectedResult, result)
+				data, _ := client.Get(context.Background(), tc.key)
+				assert.Equal(t, tc.expectedData, data)
+			}
+			defer s.Close()
+		})
+	}
+}

@@ -91,7 +91,7 @@ func (_m *PostgresRepository) InsertUser(user entity.User) error {
 	return r0
 }
 
-// UpdateUserPremium provides a mock function with given fields: user, field, value
+// UpdateUserPremium provides a mock function with given fields: user, value
 func (_m *PostgresRepository) UpdateUserPremium(user entity.User, value interface{}) error {
 	ret := _m.Called(user, value)
 

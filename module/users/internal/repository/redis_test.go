@@ -175,3 +175,47 @@ func TestRedisRepository_Get(t *testing.T) {
 		})
 	}
 }
+
+func TestRedisRepository_Del(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name           string
+		key            string
+		expectedResult int64
+		expectedError  error
+		mockRedisCall  func(redisClient *mocksredis.RedisInterface)
+	}{
+		{
+			name:           "normal case - successfully delete key",
+			key:            testKey,
+			expectedResult: int64(1),
+			mockRedisCall: func(redisClient *mocksredis.RedisInterface) {
+				redisClient.On("Del", ctx, testKey).Return(int64(1), nil)
+			},
+		},
+		{
+			name: "error case - error when deleting key",
+			key:  testKey,
+			mockRedisCall: func(redisClient *mocksredis.RedisInterface) {
+				redisClient.On("Del", ctx, testKey).Return(int64(0), errors.New("timeout"))
+			},
+			expectedResult: int64(0),
+			expectedError:  errors.New("redis client error when del: timeout"),
+		},
+	}
+
+	for _, tc := range tests {
+		redisClient := mocksredis.NewRedisInterface(t)
+
+		t.Run(tc.name, func(t *testing.T) {
+			tc.mockRedisCall(redisClient)
+			repo := repository.NewRedisRepository(redisClient)
+			result, err := repo.Del(ctx, tc.key)
+
+			if tc.expectedError != nil {
+				assert.Equal(t, tc.expectedError.Error(), err.Error())
+			}
+			assert.Equal(t, tc.expectedResult, result)
+		})
+	}
+}

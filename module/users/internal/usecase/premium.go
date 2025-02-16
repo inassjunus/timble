@@ -46,7 +46,7 @@ func (usecase PremiumUc) Grant(ctx context.Context, userID uint) error {
 		return errors.WithStack(err)
 	}
 	usecase.cache.Set(ctx, BuildPremiumCacheKey(userID), []byte(PREMIUM_TRUE_STRING), premiumExpCache)
-	usecase.redis.Set(ctx, BuildPremiumEligibilityRedisKey(userID), PREMIUM_FALSE_STRING, 0)
+	usecase.redis.Del(ctx, BuildPremiumEligibilityRedisKey(userID))
 	return nil
 }
 

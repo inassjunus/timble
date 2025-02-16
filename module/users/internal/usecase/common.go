@@ -23,6 +23,7 @@ type RedisRepository interface {
 	Set(ctx context.Context, key string, value interface{}, expire time.Duration) (string, error)
 	Get(ctx context.Context, key string) (string, error)
 	Incr(ctx context.Context, key string, expire time.Duration) (int64, error)
+	Del(ctx context.Context, key string) (int64, error)
 }
 
 type CacheRepository interface {

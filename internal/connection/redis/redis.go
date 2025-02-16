@@ -17,6 +17,7 @@ type RedisInterface interface {
 	Get(ctx context.Context, key string) (string, error)
 	Expire(ctx context.Context, key string, tm time.Duration) (bool, error)
 	Incr(ctx context.Context, key string) (int64, error)
+	Del(ctx context.Context, key string) (int64, error)
 }
 
 var (
@@ -95,6 +96,16 @@ func (r *RedisClient) Get(ctx context.Context, key string) (string, error) {
 	err = r.wrapError(err)
 	metricInfo.TrackClientWithError(err)
 	return res, err
+}
+
+// Del remove the given key from redis
+func (r *RedisClient) Del(ctx context.Context, key string) (int64, error) {
+	metricInfo := utils.NewClientMetric(r.Name, "del")
+	// result is the number of deleted keys
+	result, err := r.Client.Del(ctx, key).Result()
+	err = r.wrapError(err)
+	metricInfo.TrackClientWithError(err)
+	return result, err
 }
 
 func (r *RedisClient) wrapError(err error) error {
