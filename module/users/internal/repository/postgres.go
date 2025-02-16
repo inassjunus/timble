@@ -16,11 +16,11 @@ const (
       )
       VALUES ?
     `
-	UPDATE_USER_QUERY = `
+	UPDATE_USER_PREMIUM_QUERY = `
      UPDATE
         users
       SET
-        ? = ?
+        premium = ?
       WHERE
         id = ?
     `
@@ -84,16 +84,10 @@ func (repo *PostgresRepository) InsertUser(user entity.User) error {
 	return nil
 }
 
-func (repo *PostgresRepository) UpdateUser(user entity.User, field string, value interface{}) error {
-	param := []interface{}{
-		field,
-		value,
-		user.ID,
-	}
-
-	err := repo.PostgresClient.Exec(UPDATE_USER_QUERY, param)
+func (repo *PostgresRepository) UpdateUserPremium(user entity.User, value interface{}) error {
+	err := repo.PostgresClient.Exec(UPDATE_USER_PREMIUM_QUERY, value, user.ID)
 	if err != nil {
-		return errors.Wrap(err, "postgres client error when update to users")
+		return errors.Wrap(err, "postgres client error when update premium to users")
 	}
 
 	return nil
@@ -104,10 +98,9 @@ func (repo *PostgresRepository) UpsertUserReaction(reaction entity.ReactionParam
 		reaction.UserID,
 		reaction.TargetID,
 		reaction.Type,
-		reaction.Type,
 	}
 
-	err := repo.PostgresClient.Exec(UPSERT_USER_REACTION, param)
+	err := repo.PostgresClient.Exec(UPSERT_USER_REACTION, param, reaction.Type)
 	if err != nil {
 		return errors.Wrap(err, "postgres client error when upsert to user_reactions")
 	}

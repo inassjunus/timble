@@ -126,6 +126,12 @@ make pretty
 #### Testing
 
 Always run unit test before committing
+If you change any of the `interface`, rebuild the mocks files first with (Mockery)[https://vektra.github.io/mockery/latest/installation/]
+```shell
+mockery --all --recursive --keeptree
+```
+
+Run unit test
 ```shell
 make unit-test
 ```
