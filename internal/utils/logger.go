@@ -2,6 +2,7 @@ package utils
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -12,6 +13,10 @@ import (
 
 func BuildRequestLogFields(r *http.Request, httpStatus int) []zapcore.Field {
 	reqBody, _ := r.Context().Value(CtxRequestBodyKey).(string)
+	if reqBody != "" {
+		re := regexp.MustCompile(`password\":\s*\".*\"`)
+		reqBody = re.ReplaceAllString(reqBody, "password\": [MASKED]")
+	}
 	reqID, _ := r.Context().Value(middleware.RequestIDKey).(string)
 	return []zapcore.Field{
 		zap.String("request_id", reqID),
