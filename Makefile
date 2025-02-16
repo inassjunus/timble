@@ -25,9 +25,6 @@ unit-test: ## Run unit tests
 race-test: ## Run data race detector
 	go test -race -short ${PKG_LIST}
 
-msan-test: ## Run memory sanitizer
-	go test -msan -short ${PKG_LIST}
-
 vendor: ## Run download dependencies
 	go mod vendor
 

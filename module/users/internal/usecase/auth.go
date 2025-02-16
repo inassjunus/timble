@@ -36,7 +36,7 @@ func (usecase AuthUc) Login(ctx context.Context, params entity.UserLoginParams) 
 		return userToken, errors.WithStack(err)
 	}
 
-	if userData == nil {
+	if userData == nil || userData.ID == 0 {
 		return userToken, utils.ErrorInvalidLogin
 	}
 

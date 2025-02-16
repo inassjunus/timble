@@ -118,25 +118,31 @@ curl localhost:9090//health
 go install golang.org/x/tools/cmd/goimports@latest
 goimports -l -w .
 ```
-- Always ensure the code complies with the Golang syntax & import convention by running this command before committing
-
+- Please always ensure the code complies with the Golang syntax & import convention by running this command before committing
 ```shell
 make pretty
 ```
 #### Testing
 
-Always run unit test before committing
-If you change any of the `interface`, rebuild the mocks files first with (Mockery)[https://vektra.github.io/mockery/latest/installation/]
+If you change any of the `interface`, rebuild the mocks files first with (Mockery)[https://vektra.github.io/mockery/latest/installation/] before running usit test
 ```shell
 mockery --all --recursive --keeptree
 ```
 
-Run unit test
+Run basic unit test, this is the test that MUST be ran before each commit:
 ```shell
 make unit-test
 ```
-Check for unit test coverage, we aim for 100% coverage
+
+After significant changes, you need to run this too in order to check for race condition:
 ```shell
+make race-test
+```
+
+If the unit tests are already passed, check for unit test coverage. We aim for 100% coverage.
+```shell
+# enable script fo be executed, this only need to be done once
+chmod u+x ./tools/coverage.sh
 # display unit test coverage
 make coverage
 # display unit test coverage AND generate html file to check untested lines. The file will be names coverage.html, and you can open it on browser to see the untested lines
