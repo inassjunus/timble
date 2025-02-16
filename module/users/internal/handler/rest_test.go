@@ -165,7 +165,7 @@ func TestUsersResource_Login(t *testing.T) {
 				handlerFunc: true,
 			},
 			mocked: mocked{
-				handlerError: utils.ErrInvalidLogin,
+				handlerError: utils.ErrorInvalidLogin,
 			},
 			expected: expected{
 				expectedHTTPStatus: http.StatusUnauthorized,

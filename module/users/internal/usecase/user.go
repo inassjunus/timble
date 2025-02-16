@@ -47,7 +47,7 @@ func (usecase UserUc) Create(ctx context.Context, params entity.UserRegistration
 
 	err := usecase.db.InsertUser(userData)
 	if err != nil {
-		return userToken, errors.WithStack(err)
+		return userToken, err
 	}
 
 	savedData, err := usecase.db.GetUserByUsername(params.Username)

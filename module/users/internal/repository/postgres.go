@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 
 	"timble/internal/connection/postgres"
+	"timble/internal/utils"
 	"timble/module/users/entity"
 )
 
@@ -34,6 +35,13 @@ const (
       DO UPDATE SET
         type = ?
     `
+)
+
+var (
+	duplicateKeyErrors = map[string]string{
+		"ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)":    "email",
+		"ERROR: duplicate key value violates unique constraint \"users_username_key\" (SQLSTATE 23505)": "username",
+	}
 )
 
 type PostgresRepository struct {
@@ -78,7 +86,7 @@ func (repo *PostgresRepository) InsertUser(user entity.User) error {
 
 	err := repo.PostgresClient.Exec(INSERT_USER_QUERY, param)
 	if err != nil {
-		return errors.Wrap(err, "postgres client error when insert to users")
+		return repo.wrapInsertError(err)
 	}
 
 	return nil
@@ -106,4 +114,13 @@ func (repo *PostgresRepository) UpsertUserReaction(reaction entity.ReactionParam
 	}
 
 	return nil
+}
+
+func (repo *PostgresRepository) wrapInsertError(err error) error {
+	field, ok := duplicateKeyErrors[err.Error()]
+	if ok {
+		return utils.DuplicateUserError(field)
+	}
+
+	return errors.WithStack(errors.Wrap(err, "postgres client error when insert to users"))
 }

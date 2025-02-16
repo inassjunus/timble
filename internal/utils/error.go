@@ -20,22 +20,16 @@ var (
 		Code:    "INTERNAL SERVER ERROR",
 	}
 
-	ErrUnauthenticated = &StandardError{
+	ErrorUnauthenticated = &StandardError{
 		Message:    "Invalid or missing required authentication",
 		Code:       "Unauthorized",
 		HttpStatus: 401,
 	}
 
-	ErrInvalidLogin = &StandardError{
+	ErrorInvalidLogin = &StandardError{
 		Message:    "Invalid username or password",
 		Code:       "Unauthorized",
 		HttpStatus: http.StatusUnauthorized,
-	}
-
-	ErrDuplicateUser = &StandardError{
-		Message:    "Username or email already exists",
-		Code:       "DUPLICATE_USER",
-		HttpStatus: http.StatusBadRequest,
 	}
 )
 
@@ -76,5 +70,14 @@ func UserNotFoundError(userID uint) *StandardError {
 	return &StandardError{
 		Message: fmt.Sprintf("User not found:%d", userID),
 		Code:    "NOT FOUND",
+	}
+}
+
+func DuplicateUserError(field string) *StandardError {
+	return &StandardError{
+		Message:    "Username or email already exists",
+		Code:       "DUPLICATE_USER",
+		Field:      field,
+		HttpStatus: http.StatusBadRequest,
 	}
 }

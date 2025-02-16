@@ -68,7 +68,7 @@ func Authentication(auth *AuthConfig) func(next http.Handler) http.Handler {
 }
 
 func authFailed(w http.ResponseWriter) {
-	errByte, _ := json.Marshal(ErrUnauthenticated)
+	errByte, _ := json.Marshal(ErrorUnauthenticated)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Write(errByte)

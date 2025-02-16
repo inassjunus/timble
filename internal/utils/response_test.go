@@ -83,10 +83,10 @@ func TestResponse_NewErrorResponse(t *testing.T) {
 		},
 		{
 			name:       "normal case with standard error",
-			err:        utils.ErrUnauthenticated,
+			err:        utils.ErrorUnauthenticated,
 			httpStatus: http.StatusUnauthorized,
 			expected: &utils.Response{
-				ErrorDetail: utils.ErrUnauthenticated,
+				ErrorDetail: utils.ErrorUnauthenticated,
 				Meta:        utils.Meta{HTTPStatus: http.StatusUnauthorized},
 			},
 		},

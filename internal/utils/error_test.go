@@ -105,3 +105,25 @@ func TestError_UserNotFoundError(t *testing.T) {
 		})
 	}
 }
+
+func TestError_DuplicateUserError(t *testing.T) {
+	cases := []struct {
+		name           string
+		field          string
+		expectedResult string
+	}{
+		{
+			name:           "normal case",
+			field:          "email",
+			expectedResult: "Error on\ncode: DUPLICATE_USER; error: Username or email already exists; field: email",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := utils.DuplicateUserError(tc.field).Error()
+
+			assert.Equal(t, tc.expectedResult, actual)
+		})
+	}
+}

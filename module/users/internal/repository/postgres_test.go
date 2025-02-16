@@ -161,6 +161,14 @@ func TestPostgresRepository_InsertUser(t *testing.T) {
 			},
 		},
 		{
+			name: "error case - duplicate user",
+			args: *testUser,
+			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
+				postgresClient.On("Exec", repository.INSERT_USER_QUERY, postgreParams).Return(errors.New("ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)"))
+			},
+			expectedError: errors.New("Error on\ncode: DUPLICATE_USER; error: Username or email already exists; field: email"),
+		},
+		{
 			name: "error case - unexpected error during insert",
 			args: *testUser,
 			mockPostgresCall: func(postgresClient *mockspostgres.PostgresInterface) {
