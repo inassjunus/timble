@@ -19,6 +19,7 @@ func TestNewPremiumUsecase(t *testing.T) {
 	t.Run("new premiumh usecase", func(t *testing.T) {
 
 		usecase := uc.NewPremiumUsecase(
+			&repository.RedisRepository{},
 			&repository.PostgresRepository{},
 			&repository.CacheRepository{},
 			&log.Logger{},
@@ -35,7 +36,8 @@ func TestPremiumUc_Grant(t *testing.T) {
 	}
 
 	type mocked struct {
-		dbError error
+		redisResult string
+		dbError     error
 	}
 	tests := []struct {
 		name        string
@@ -52,6 +54,16 @@ func TestPremiumUc_Grant(t *testing.T) {
 					Premium: true,
 				},
 			},
+			mocked: mocked{
+				redisResult: uc.PREMIUM_TRUE_STRING,
+			},
+		},
+		{
+			name: "error case - user not eligible",
+			args: args{
+				params: 1,
+			},
+			expectedErr: errors.New("Error on\ncode: NOT ELIGIBLE FOR PREMIUM; error: You are not eligible for premium for now; field:"),
 		},
 		{
 			name: "error case - error from db",
@@ -63,23 +75,30 @@ func TestPremiumUc_Grant(t *testing.T) {
 				},
 			},
 			mocked: mocked{
-				dbError: errors.New("DB error"),
+				dbError:     errors.New("DB error"),
+				redisResult: uc.PREMIUM_TRUE_STRING,
 			},
 			expectedErr: errors.New("DB error"),
 		},
 	}
 	for _, tc := range tests {
 		db := mocksrepo.NewPostgresRepository(t)
+		redis := mocksrepo.NewRedisRepository(t)
 		cache := mocksrepo.NewCacheRepository(t)
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			db.On("UpdateUserPremium", tc.args.dbParams, interface{}(tc.args.dbParams.Premium)).Return(tc.mocked.dbError)
-			if tc.expectedErr == nil {
-				cache.On("Set", ctx, "premium:1", []byte("true"), 24*time.Hour).Return(nil)
+			redis.On("Get", ctx, "eligible_for_premium:1").Return(tc.mocked.redisResult, nil)
+			if tc.mocked.redisResult == "true" {
+				db.On("UpdateUserPremium", tc.args.dbParams, interface{}(tc.args.dbParams.Premium)).Return(tc.mocked.dbError)
 			}
 
-			usecase := uc.NewPremiumUsecase(db, cache, &log.Logger{})
+			if tc.expectedErr == nil {
+				cache.On("Set", ctx, "premium:1", []byte("true"), 24*time.Hour).Return(nil)
+				redis.On("Set", ctx, "eligible_for_premium:1", "false", 0*time.Minute).Return("", nil)
+			}
+
+			usecase := uc.NewPremiumUsecase(redis, db, cache, &log.Logger{})
 
 			err := usecase.Grant(ctx, tc.args.params)
 			if tc.expectedErr != nil {
@@ -134,6 +153,7 @@ func TestPremiumUc_Unsubscribe(t *testing.T) {
 	}
 	for _, tc := range tests {
 		db := mocksrepo.NewPostgresRepository(t)
+		redis := mocksrepo.NewRedisRepository(t)
 		cache := mocksrepo.NewCacheRepository(t)
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
@@ -143,7 +163,7 @@ func TestPremiumUc_Unsubscribe(t *testing.T) {
 				cache.On("Set", ctx, "premium:1", []byte("false"), 24*time.Hour).Return(nil)
 			}
 
-			usecase := uc.NewPremiumUsecase(db, cache, &log.Logger{})
+			usecase := uc.NewPremiumUsecase(redis, db, cache, &log.Logger{})
 
 			err := usecase.Unsubscribe(ctx, tc.args.params)
 			if tc.expectedErr != nil {

@@ -30,7 +30,7 @@ func NewUsersHandler(auth *utils.AuthConfig, logger *zap.Logger, cache cache.Cac
 	postgresRepository := repository.NewPostgresRepository(postgresClient)
 
 	authUsecase := usecase.NewAuthUsecase(auth, postgresRepository, logger)
-	premiumUsecase := usecase.NewPremiumUsecase(postgresRepository, cacheRepository, logger)
+	premiumUsecase := usecase.NewPremiumUsecase(redisRepository, postgresRepository, cacheRepository, logger)
 	userUsecase := usecase.NewUserUsecase(auth, redisRepository, postgresRepository, cacheRepository, logger)
 
 	return handler.NewUsersResource(authUsecase, premiumUsecase, userUsecase, logger)

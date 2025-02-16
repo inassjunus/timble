@@ -42,11 +42,15 @@ func BuildPremiumCacheKey(userID uint) string {
 	return fmt.Sprintf("premium:%d", userID)
 }
 
-func BuildReactionLimitCacheKey(userID uint) string {
+func BuildReactionLimitRedisKey(userID uint) string {
 	currentTime := time.Now()
 	loc, err := time.LoadLocation("Asia/Jakarta")
 	if err == nil {
 		currentTime = currentTime.In(loc)
 	}
 	return fmt.Sprintf("reaction:%s:%d", currentTime.Format("2006-01-02"), userID)
+}
+
+func BuildPremiumEligibilityRedisKey(userID uint) string {
+	return fmt.Sprintf("eligible_for_premium:%d", userID)
 }

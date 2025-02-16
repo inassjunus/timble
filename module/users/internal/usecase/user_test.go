@@ -422,7 +422,7 @@ func TestUserUc_React(t *testing.T) {
 			}
 
 			if tc.shouldMock.redisGetLimit {
-				redis.On("Get", ctx, uc.BuildReactionLimitCacheKey(tc.args.params.UserID)).Return(tc.mocked.redisGetLimitResult, nil)
+				redis.On("Get", ctx, uc.BuildReactionLimitRedisKey(tc.args.params.UserID)).Return(tc.mocked.redisGetLimitResult, nil)
 			}
 
 			if tc.shouldMock.dbGetUserByIDTarget {
@@ -434,7 +434,7 @@ func TestUserUc_React(t *testing.T) {
 			}
 
 			if tc.shouldMock.redisIncr {
-				redis.On("Incr", ctx, uc.BuildReactionLimitCacheKey(tc.args.params.UserID), time.Hour*24).Return(int64(1), nil)
+				redis.On("Incr", ctx, uc.BuildReactionLimitRedisKey(tc.args.params.UserID), time.Hour*24).Return(int64(1), nil)
 			}
 
 			usecase := uc.NewUserUsecase(defaultAuthConfig, redis, db, cache, &log.Logger{})

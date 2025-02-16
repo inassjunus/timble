@@ -78,7 +78,7 @@ type expected struct {
 func Test_NewUsersResource(t *testing.T) {
 	t.Run("new users resource", func(t *testing.T) {
 		auc := usecase.NewAuthUsecase(&utils.AuthConfig{}, &repository.PostgresRepository{}, &log.Logger{})
-		puc := usecase.NewPremiumUsecase(&repository.PostgresRepository{}, &repository.CacheRepository{}, &log.Logger{})
+		puc := usecase.NewPremiumUsecase(&repository.RedisRepository{}, &repository.PostgresRepository{}, &repository.CacheRepository{}, &log.Logger{})
 		uuc := usecase.NewUserUsecase(&utils.AuthConfig{}, &repository.RedisRepository{}, &repository.PostgresRepository{}, &repository.CacheRepository{}, &log.Logger{})
 
 		res := handler.NewUsersResource(auc, puc, uuc, &log.Logger{})

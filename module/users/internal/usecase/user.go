@@ -95,7 +95,7 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 	}
 
 	if !isPremium {
-		limitStr, _ := usecase.redis.Get(ctx, BuildReactionLimitCacheKey(params.UserID))
+		limitStr, _ := usecase.redis.Get(ctx, BuildReactionLimitRedisKey(params.UserID))
 		limit, _ := strconv.Atoi(limitStr)
 		if limit >= REACTION_LIMIT {
 			return utils.NewStandardError("Reaction limit exceeded, try again tommorow", "LIMIT_EXCEEDED", "")
@@ -116,8 +116,8 @@ func (usecase UserUc) React(ctx context.Context, params entity.ReactionParams) e
 		return errors.WithStack(err)
 	}
 
-	if !isPremium {
-		usecase.redis.Incr(ctx, BuildReactionLimitCacheKey(params.UserID), reactionLimitExpCache)
+	if !isPremium && params.Type != 0 {
+		usecase.redis.Incr(ctx, BuildReactionLimitRedisKey(params.UserID), reactionLimitExpCache)
 	}
 
 	return nil
