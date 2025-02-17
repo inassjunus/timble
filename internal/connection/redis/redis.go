@@ -71,7 +71,7 @@ func (r *RedisClient) Incr(ctx context.Context, key string) (int64, error) {
 
 // Expire a key-value pair to redis
 func (r *RedisClient) Expire(ctx context.Context, key string, tm time.Duration) (bool, error) {
-	metricInfo := utils.NewClientMetric(r.Name, "expire-at")
+	metricInfo := utils.NewClientMetric(r.Name, "expire")
 	res, err := r.Client.Expire(ctx, key, tm).Result()
 	err = r.wrapError(err)
 	metricInfo.TrackClientWithError(err)

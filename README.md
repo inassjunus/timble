@@ -9,7 +9,7 @@ Timble is a simple Golang microservice for a mobile dating app.
 ## Endpoints
 
 See the endpoints served by Timble in this [Postman](https://www.postman.com/) collection
-- [Timble.postman_collection.json](https://github.com/user-attachments/files/18813820/Timble.postman_collection.json)
+- [Timble.postman_collection.json](https://github.com/user-attachments/files/18817626/Timble.postman_collection.json)
 - [Timble Local.postman_environment.json](https://github.com/user-attachments/files/18813824/Timble.Local.postman_environment.json)
 
 ## Technical Guidelines

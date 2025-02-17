@@ -33,7 +33,10 @@ func NewPremiumUsecase(redis RedisRepository, db PostgresRepository, cache Cache
 
 func (usecase PremiumUc) Grant(ctx context.Context, userID uint) error {
 	// check if user is eligible for premium
-	eligibleForPremium, _ := usecase.redis.Get(ctx, BuildPremiumEligibilityRedisKey(userID))
+	eligibleForPremium, err := usecase.redis.Get(ctx, BuildPremiumEligibilityRedisKey(userID))
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	if eligibleForPremium != PREMIUM_TRUE_STRING {
 		return utils.NewStandardError("You are not eligible for premium for now", "NOT ELIGIBLE FOR PREMIUM", "")
 	}
@@ -41,7 +44,7 @@ func (usecase PremiumUc) Grant(ctx context.Context, userID uint) error {
 		ID:      userID,
 		Premium: true,
 	}
-	err := usecase.db.UpdateUserPremium(userData, interface{}(userData.Premium))
+	err = usecase.db.UpdateUserPremium(userData, interface{}(userData.Premium))
 	if err != nil {
 		return errors.WithStack(err)
 	}

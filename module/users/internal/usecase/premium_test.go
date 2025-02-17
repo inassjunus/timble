@@ -37,6 +37,7 @@ func TestPremiumUc_Grant(t *testing.T) {
 
 	type mocked struct {
 		redisResult string
+		redisError  error
 		dbError     error
 	}
 	tests := []struct {
@@ -66,6 +67,20 @@ func TestPremiumUc_Grant(t *testing.T) {
 			expectedErr: errors.New("Error on\ncode: NOT ELIGIBLE FOR PREMIUM; error: You are not eligible for premium for now; field:"),
 		},
 		{
+			name: "error case - error from redis",
+			args: args{
+				params: 1,
+				dbParams: entity.User{
+					ID:      1,
+					Premium: true,
+				},
+			},
+			mocked: mocked{
+				redisError: errors.New("Redis error"),
+			},
+			expectedErr: errors.New("Redis error"),
+		},
+		{
 			name: "error case - error from db",
 			args: args{
 				params: 1,
@@ -88,7 +103,7 @@ func TestPremiumUc_Grant(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			redis.On("Get", ctx, "eligible_for_premium:1").Return(tc.mocked.redisResult, nil)
+			redis.On("Get", ctx, "eligible_for_premium:1").Return(tc.mocked.redisResult, tc.mocked.redisError)
 			if tc.mocked.redisResult == "true" {
 				db.On("UpdateUserPremium", tc.args.dbParams, interface{}(tc.args.dbParams.Premium)).Return(tc.mocked.dbError)
 			}
